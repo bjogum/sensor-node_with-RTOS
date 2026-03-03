@@ -5,7 +5,7 @@ void readPrio3SensorsAsync();
 
 struct SensorData {
     // Alarm (prio 1)
-    volatile bool reedSensor1; // volatile: tvingar cpu att läsa variablen från, för att få en 100% korrekt status.
+    volatile bool reedSensor1; // volatile: tvingar cpu att läsa variablen från RAM, för att få en 100% korrekt status.
     volatile bool reedSensor2;
     volatile bool motionDetect;
 
