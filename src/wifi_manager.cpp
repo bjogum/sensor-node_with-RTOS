@@ -7,9 +7,10 @@ bool connectedToWiFi = false;
 bool wifiIsConnected(){
     return (WiFi.status() == WL_CONNECTED);
 }
+
 // init, bara vid uppstart!
 void initWiFi(){
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);    
 }
 
 // hanterar wifi
