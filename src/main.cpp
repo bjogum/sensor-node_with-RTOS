@@ -9,7 +9,7 @@
 void setup() {
   Serial.begin(115200);
   initWiFi();
-  sensorsInit();
+  initComonents();
   // attachInterrupt --- HW interrupt: bryter pågående (lägre prioriterad) process omedelbart
 }
 

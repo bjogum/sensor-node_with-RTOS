@@ -5,13 +5,44 @@
 #include <stdio.h>
 #include <Arduino.h>
 #include "sensor_ds18b20.h"
+#include "indicateStatus.h"
 #define numOfPrio3Sensors 2
 
-void sensorsInit(){
+void initComonents(){
     initDHT();
     initDS18B20();
+    initMatrix();
 }
 
+
+void readPrio1Sensors(){
+    static int currentSensor = READING_PIR; // static -> sätts endast EN gång (init)
+    // för att minimiera jitter för "låg-prio" sensorer - läs asynkront, en sensor åt gången.
+    switch (currentSensor)
+    {
+    case READING_PIR: 
+        // läs PIR
+        currentSensor = READING_REED1; 
+        break;
+        
+    case READING_REED1:
+        //läs reed1
+        currentSensor = READING_REED2; 
+        break;
+
+    case READING_REED2:
+        //läs reed2
+        currentSensor = INDICATE_STATUS; 
+        break;
+
+    case INDICATE_STATUS:
+        // indicate status (LED)
+        statusLED();
+
+        currentSensor = READING_PIR; 
+        break;
+    }
+};
 
 void readPrio2Sensors(){
     static int currentSensor = READING_DS18B20; // static -> sätts endast EN gång (init)

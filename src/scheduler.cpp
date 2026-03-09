@@ -4,6 +4,7 @@
 #include "tasks.h"
 #include "alarm.h"
 #include "wifi_manager.h"
+#include "indicateStatus.h"
 #define WAKE_UP_SYSTEM_MS 10000 // maybe 60s ? (MQ2 is slowest..)
 
 
@@ -21,7 +22,7 @@ struct Tasks {
 // Tasks-array: "taskList" -> innehåller samtliga TASKS. ( utelämnar parametern lastRun->0) ) 
 Tasks taskList[] = {
     {sensorPrio1, 20},    // Security sensors              -> 20ms?
-    {sensorPrio2, 500},   // Saftey sensors                -> 500ms
+    {sensorPrio2, 500},   // Saftey sensors                -> 300ms
     {sensorPrio3, 1500},  // Temp, fukt, lekage            -> 1500ms
     {serviceCheckAlarm, 100},  // Kolla om larm är aktivt  -> 1500ms
     {serviceBLE, 100,50}, // håll BLE aktivt & skcka data - lastRun 50ms ("offset"): underviker krock med Wifi-> 100ms
@@ -42,6 +43,7 @@ void taskScheduler(){
       {
         
       case sensorPrio1:
+        statusLED();
         // security
         // triggar någon sensor -> sätts extern var. till True
         break;
