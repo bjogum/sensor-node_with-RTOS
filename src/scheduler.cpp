@@ -33,7 +33,6 @@ Tasks taskList[] = {
 
 void taskScheduler(){
   const int numOfTasks = sizeof(taskList) / sizeof(taskList[0]);
-  //unsigned long sysTime = millis(); // flytta till "node" - strukten!! <<----------------
 
   // Loopa igenom listan med TASKS (taskList) & checka tiden.
   for (int i; i<numOfTasks; i++){
@@ -89,9 +88,9 @@ void taskScheduler(){
 
 void startingSystem(){
     if (node.runStatus == WAKING_UP){
-      if (millis() >= WAKE_UP_SYSTEM_MS){
+      if ((manageWiFi()) && (millis() >= WAKE_UP_SYSTEM_MS) && (manageMQTT())) {
         node.runStatus = RUNNING;
-        Serial.println("\n<<< SYSTEM READY >>>\n\n");
+        Serial.println("\n<<< SYSTEM IS READY >>>\n\n");
       }
     }
 }

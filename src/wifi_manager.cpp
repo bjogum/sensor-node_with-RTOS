@@ -13,12 +13,13 @@ void initWiFi(){
 }
 
 // hanterar wifi
-void manageWiFi(){
+bool manageWiFi(){
     if (!wifiIsConnected()){
         if (node.connectionStatus.wifiIsActive){
             node.connectionStatus.wifiIsActive = false;
         Serial.println("\n\n..WiFi disconneced..");
         Serial.println("");
+        return false;
         }
 
     } else {
@@ -27,6 +28,7 @@ void manageWiFi(){
             Serial.print("\n\nConneced to WiFi: ");
             Serial.println(WIFI_SSID);
             Serial.println("");
+            return true;
         }
     }
 }

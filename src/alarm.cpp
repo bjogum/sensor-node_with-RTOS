@@ -10,6 +10,7 @@ System node = {
   .connectionStatus = {
     .wifiIsActive = false,
     .bleIsActive = false,
+    .mqttIsActive = false,
   },
   .alarmMode = STATE_DISARMED,  // ska initieras som "STATE_DISARMED".
   .alarmStatus = {

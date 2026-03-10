@@ -20,6 +20,7 @@ typedef enum
 typedef struct {
     bool wifiIsActive;
     bool bleIsActive;
+    bool mqttIsActive;
 }ConnectionStatus;
 
 // Struct för all sensor data som samlas in

@@ -3,7 +3,7 @@
 #include <WiFiS3.h>
 
 bool wifiIsConnected();
-void manageWiFi();
+bool manageWiFi();
 void initWiFi();
 
 

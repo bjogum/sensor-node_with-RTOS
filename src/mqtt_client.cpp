@@ -15,34 +15,32 @@ int port = MQTT_PORT;
 const char indoorTempTopic[] = "sensor/indoorTemp";
 const char indoorHumidTopic[] = "sensor/indoorHumidity";
 
-bool tryMQTTconnect = false;
-bool MQTTconnected = false;
+//bool tryMQTTconnect = false;
 unsigned long MQTTConnectTimer = 0;
 unsigned long MQTTLastSendTimer = 0;
 
 // funktionen håller igång MQTT samt skickar/ta emot meddelanden.
-void manageMQTT() {
+bool manageMQTT() {
     // d) LWT: Maxtid, 10s offline -> ESP ger larm 
     // skriv testamentet här...
-
+    
 
     // om det gått 2 sek sen connect & nu conencted, skicka init
-    if ((node.sysTime - MQTTConnectTimer >= 2000) && (!MQTTconnected)){
+    if ((node.sysTime - MQTTConnectTimer >= 2000) && (!node.connectionStatus.mqttIsActive)){
         MQTTConnectTimer = node.sysTime;
 
         if (mqttClient.connect(broker, port)) {
-            tryMQTTconnect = false;
-            MQTTconnected = true;
-
+            //tryMQTTconnect = false;
+            node.connectionStatus.mqttIsActive = true;
             initSendMQTT();
+            return true;
+
         } else {
-            MQTTconnected = false;
+            node.connectionStatus.mqttIsActive = false;
             Serial.println("<< MQTT : Connect error >> Test in 2 sec");
+            return false;
         }
     }
-
-    // .poll() : håller igång anslutningen (ping) - och skickar/tar emot MQTT
-    mqttClient.poll();
 
 }
 
@@ -69,6 +67,8 @@ void initSendMQTT(){
 
 // -- avgör om datan behöver publiseras - Beroende på sensorer/status samt state --
 void sendMQTT(){
+    // .poll() : håller igång anslutningen (ping) - och skickar/tar emot MQTT
+    mqttClient.poll();
     
     if (node.sysTime - MQTTLastSendTimer >= 2000){
         MQTTLastSendTimer = node.sysTime;
