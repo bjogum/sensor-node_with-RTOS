@@ -15,11 +15,15 @@ This repo handles all sensor data for an alarm system, utilizing an Arduino Uno 
 
 #### Hardware
 * MCU: Arduino Uno R4 WiFi
+
 * Sensors:
 
-        → DHT11 : indoor temp + indoor humidity
-        → MQ2 : Gas sensor (detecting fire)
-        → DS18B20 : Temp sensor (detecting fire)
-        → PIR : Motion detector
-        → Reed : Magnet sensor (detect open doors/windows)
-        → Rain-sensor : Detect water leak
+| Sensors       | Detect         | PIN |
+| ------------- |:--------------:| ---:|
+| DHT11         | In: temp+humid | D2  |
+| DS18B20       | Temp, fire     | D5  |
+| MQ2           | Gas, fire      |  -  |
+| PIR           | Motion         |  -  |
+| Reed          | Open door/win  |  -  |
+| Rain-sensor   | Water leak     |  -  |
+
