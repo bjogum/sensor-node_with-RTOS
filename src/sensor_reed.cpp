@@ -6,5 +6,7 @@ void initReed(){
 }
 
 void reedIsTriggerd(){
-    node.sensors.reedSensor1 = true;
+    if (node.alarmMode != STATE_DISARMED){
+        node.sensors.reedSensor1 = true;
+    }
 }

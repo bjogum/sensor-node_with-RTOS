@@ -12,7 +12,7 @@ System node = {
     .bleIsActive = false,
     .mqttIsActive = false,
   },
-  .alarmMode = STATE_ARMED_AWAY,  // <<------ BARA FÖR TEST ------ >> ska initieras som "STATE_DISARMED".
+  .alarmMode = STATE_DISARMED,  // <<------ BARA FÖR TEST ------ >> ska initieras som "STATE_DISARMED".
   .alarmStatus = {
     .intrusionAlarm = false,
     .fireAlarm = false,

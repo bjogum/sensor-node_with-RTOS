@@ -9,7 +9,7 @@ void initPIR(){
 }
 
 void motionIsDetected(){
-    if (node.sysTime > 70000){ // warm-up time
+    if (node.sysTime > 70000 && node.alarmMode == STATE_ARMED_AWAY){ // warm-up time
         //node.sensors.motionDetect = motionStatusNow;
     }
 }
