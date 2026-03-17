@@ -84,13 +84,13 @@ void sendMQTT(){
         mqttClient.beginMessage(indoorTempTopic,false, 0,false); // QoS = 0
         mqttClient.print(node.sensors.indoorTemp);
         if (mqttClient.endMessage()) {
-            Serial.println("Temp: Sent!");
+            Serial.println("\nTemp: Sent!");
         } 
 
         mqttClient.beginMessage(indoorHumidTopic,false, 0,false);
         mqttClient.print(node.sensors.indoorHumidity);
         if (mqttClient.endMessage()) {
-            Serial.println("Humidity: Sent!");
+            Serial.println("Humidity: Sent!\n");
         } 
 
         if (node.alarmStatus.fireAlarm){
@@ -98,14 +98,14 @@ void sendMQTT(){
             mqttClient.print(node.sensors.fireTemp);
             mqttClient.print(node.sensors.smokeSensor);
             if (mqttClient.endMessage()) {
-                Serial.println("Fire: Sent!");
+                Serial.println("\nFire: Sent!\n");
         } 
 
         if (node.alarmStatus.waterLeak){
             mqttClient.beginMessage(waterleakTopic,false, 0,false);
             mqttClient.print(node.sensors.waterLeak);
             if (mqttClient.endMessage()) {
-                Serial.println("Water: Sent!");
+                Serial.println("\nWater: Sent!\n");
             } 
         }
 
