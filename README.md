@@ -8,9 +8,9 @@ This repo handles all sensor data for an alarm system, utilizing an Arduino Uno 
 
 The system decouples critical detection from application logic for maximum reliability:
 
-* Hardware Interrupts (PIR/Reed): Ensures microsecond detection latency, independent of system load.
-* Deterministic Timing (SysTick): Provides a stable 1ms hardware time-base for precise logging and synchronization.
-* Asynchronous Execution: The main loop handles status LEDs, indoor temp/humidity, and resource-heavy communication (BLE/WiFi) by acting on flags and timestamps from the hardware layer.
+* ***Hardware Interrupts (PIR/Reed):*** Ensures microsecond detection latency, independent of system load.
+* ***Deterministic Timing (SysTick):*** Provides a stable 1ms hardware time-base for precise logging and synchronization.
+* ***Asynchronous Execution:*** The main loop handles status LEDs, indoor temp/humidity, and resource-heavy communication (BLE/WiFi) by acting on flags and timestamps from the hardware layer.
 
 #### Setup - Info
 
