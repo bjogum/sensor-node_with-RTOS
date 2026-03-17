@@ -3,17 +3,16 @@
 #include "wifi_manager.h"
 #include <ArduinoMqttClient.h>
 #include <ArduinoJson.h>
-#define MQTT_SEND_TIME 2000 // skicka MQTT varannan sek
-#define MQTT_RECONNECT_TIME 30000 // reconnect, 30s
+#define MQTT_SEND_TIME 2000             // skicka MQTT varannan sek
+#define MQTT_RECONNECT_TIME 30000       // max reconnect intervall, 30s
 #define MQTT_CONNECTION_TIMEOUT 1000
-#define MQTT_HEARTBEAT 3000 // Prova sänka: 15000 -> 3000
-#define BROKER_PORT 1883  // std: 1883 - krypt: 8883
+#define MQTT_HEARTBEAT 3000             // Broker rappoterar OFFLINE efter ~ 4s
+#define BROKER_PORT 1883                // okrypt: 1883 - TLS, krypt: 8883
 #define BROKER_IP "192.168.1.100"
 
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
-int willQos                      = 1;
 int port                         = BROKER_PORT;
 const char broker[]              = BROKER_IP;
 const char indoorTempTopic[]     = "sensor/indoorTemp";
@@ -24,6 +23,7 @@ const char systemFailure[]       = "systemFailure";
 const char willTopic[]           = "sensor-node-status";
 const char willPayload[]         = "OFFLINE";
 bool willRetain                  = true;
+int willQos                      = 1;
 
 //bool tryMQTTconnect = false;
 unsigned long MQTTConnectTimer = 0;
@@ -42,8 +42,9 @@ int manageMQTT() {
     mqttClient.print(willPayload);
     mqttClient.endWill();
 
-    mqttClient.setKeepAliveInterval(MQTT_HEARTBEAT);            // heartbeat, 15s
-    mqttClient.setConnectionTimeout(MQTT_CONNECTION_TIMEOUT);   // sätter tiden till max 1s
+    // mqtt settings
+    mqttClient.setKeepAliveInterval(MQTT_HEARTBEAT);
+    mqttClient.setConnectionTimeout(MQTT_CONNECTION_TIMEOUT);
 
     if ((node.sysTime - MQTTConnectTimer >= MQTT_RECONNECT_TIME) && (!node.connectionStatus.mqttIsActive) ){ 
         MQTTConnectTimer = millis();
