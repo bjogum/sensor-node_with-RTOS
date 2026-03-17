@@ -13,7 +13,7 @@ void initWiFi(){
 }
 
 // hanterar wifi
-bool manageWiFi(){
+int manageWiFi(){
     if (!wifiIsConnected()){
         if (node.connectionStatus.wifiIsActive){
             node.connectionStatus.wifiIsActive = false;

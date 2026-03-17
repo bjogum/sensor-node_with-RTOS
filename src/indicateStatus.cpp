@@ -26,7 +26,7 @@ void initMatrix(){
     // node.matrixReady = true;
 }
 
-void statusLED(){
+int statusLED(){
     if (!ledActive && (node.sysTime - ledClock >= LED_OFF_TIME)){
         matrix.loadFrame(LED_ON_FRAME); //matrix.on(MATRIX_LED);
         ledActive = true;
@@ -38,5 +38,6 @@ void statusLED(){
         ledActive = false;
         ledClock = node.sysTime;
     }
-    
+
+    return 0;
 }

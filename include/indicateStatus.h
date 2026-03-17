@@ -2,6 +2,6 @@
 #define INDICATE_STATUS_H
 
 void initMatrix();
-void statusLED();
+int statusLED();
 
 #endif

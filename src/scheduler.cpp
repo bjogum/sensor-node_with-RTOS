@@ -8,75 +8,35 @@
 #include "mqtt_client.h"
 #define WAKE_UP_SYSTEM_MS 20000 // maybe 60s ? (MQ2 behöver tid..)
 
+// 'TaskFunction' blir en definition av funktionspekare.
+typedef int (*TaskFunction)(void);
 
-// enum för resp. PRIO-klass.
-enum TaskType {sensorPrio1, sensorPrio2, sensorPrio3, serviceCheckAlarm, serviceBLE, serviceWiFi, serviceMQTT};
-
-// struct för resp. TASK, innehållande: [Prioklass/funktion] - [intervall (ms)] - [senaste körningen (ms)]
-// [ersätter ev. prioType med funktionspekare senare..]
+// struct för resp. TASK, innehållande: [Funktionspekare] - [intervall (ms)] - [senaste körningen (ms)]
 struct Tasks {
-    TaskType prioType;
-    const unsigned long intervall;
-    unsigned long lastRun;
+    TaskFunction run;               // pekare till funktion
+    const unsigned long intervall;  // hur tätt den tillåts köra
+    unsigned long lastRun;          // när den senast kördes
 };
 
-// Tasks-array: "taskList" -> innehåller samtliga TASKS. ( utelämnar parametern lastRun->0) ) 
+// Tasks-array: "taskList" -> innehåller samtliga Tasks, med tillhörande parametrar) 
 Tasks taskList[] = {
-    {sensorPrio1, 20},    // Security sensors              -> 20ms?
-    {sensorPrio2, 500},   // Saftey sensors                -> 300ms
-    {sensorPrio3, 1500},  // Temp, fukt, lekage            -> 1500ms
-    {serviceCheckAlarm, 100},  // Kolla om larm är aktivt  -> 1500ms
-    {serviceBLE, 100,50}, // håll BLE aktivt & skcka data - lastRun 50ms ("offset"): underviker krock med Wifi-> 100ms
-    {serviceWiFi, 5000},   // håll WiFi aktivt & skcka data -> 5000ms
-    {serviceMQTT, 100},   // håll WiFi aktivt & skcka data -> 100ms
+    {readPrio1Sensors, 20},     // Security sensors              -> 20ms?
+    {readPrio2Sensors, 500},    // Saftey sensors                -> 300ms
+    {readPrio3Sensors, 1500},   // Temp, fukt, lekage            -> 1500ms
+    {checkAlarmStatus, 100},    // Kolla om larm är aktivt  -> 1500ms
+    //{manageBLE, 100,50},      // håll BLE aktivt & skcka data - lastRun 50ms ("offset"): underviker krock med Wifi-> 100ms
+    {manageWiFi, 5000},         // håll WiFi aktivt & skcka data -> 5000ms
+    {manageMQTT, 100},          // håll WiFi aktivt & skcka data -> 100ms
+    {statusLED, 100},
 };
 
 void taskScheduler(){
   const int numOfTasks = sizeof(taskList) / sizeof(taskList[0]);
 
   // Loopa igenom listan med TASKS (taskList) & checka tiden.
-  for (int i; i<numOfTasks; i++){
+  for (int i = 0; i<numOfTasks; i++){
     if (node.sysTime - taskList[i].lastRun >= taskList[i].intervall){
-
-      // kör den task det är dax att köra
-      switch (taskList[i].prioType)
-      {
-        
-      case sensorPrio1:
-        statusLED();
-        // security
-        // triggar någon sensor -> sätts extern var. till True
-        break;
-
-      case sensorPrio2:
-        readPrio2Sensors();  
-        // triggar någon sensor -> sätts extern var. till True
-        break;
-
-      case sensorPrio3:
-        readPrio3Sensors();
-        
-        break;
-      
-      case serviceCheckAlarm:
-        checkAlarmStatus();
-        break;
-      
-      case serviceBLE:
-        // håll BLE igång -> skicka aktuell data
-        break;
-
-      case serviceWiFi:
-        // kolla så wifi är anslutet
-        manageWiFi();
-        break;
-
-      case serviceMQTT:
-        // sub/pub mqtt
-        manageMQTT();
-        break;    
-
-      }
+      taskList[i].run();
       taskList[i].lastRun = node.sysTime;
     }
   };

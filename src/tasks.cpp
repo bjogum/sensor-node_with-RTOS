@@ -18,7 +18,7 @@ void initComponents(){
 }
 
 
-void readPrio1Sensors(){
+int readPrio1Sensors(){
     static int currentSensor = READING_PIR; // static -> sätts endast EN gång (init)
     // för att minimiera jitter för "låg-prio" sensorer - läs asynkront, en sensor åt gången.
     switch (currentSensor)
@@ -26,28 +26,28 @@ void readPrio1Sensors(){
     case READING_PIR: 
         // läs PIR
         currentSensor = READING_REED1; 
-        break;
+        return 0;
         
     case READING_REED1:
         //läs reed1
         currentSensor = READING_REED2; 
-        break;
+        return 0;
 
     case READING_REED2:
         //läs reed2
         currentSensor = INDICATE_STATUS; 
-        break;
+        return 0;
 
     case INDICATE_STATUS:
         // indicate status (LED)
         statusLED();
 
         currentSensor = READING_PIR; 
-        break;
+        return 0;
     }
 };
 
-void readPrio2Sensors(){
+int readPrio2Sensors(){
     static int currentSensor = READING_DS18B20; // static -> sätts endast EN gång (init)
     // för att minimiera jitter för "låg-prio" sensorer - läs asynkront, en sensor åt gången.
     switch (currentSensor)
@@ -55,18 +55,18 @@ void readPrio2Sensors(){
     case READING_DS18B20: 
         getDS18B20data();
         currentSensor = READING_MQ2; 
-        break;
+        return 0;
 
         
     case READING_MQ2:
         //läs smoke sensor
         currentSensor = READING_DS18B20; 
-        break;
+        return 0;
     }
 };
 
 
-void readPrio3Sensors(){
+int readPrio3Sensors(){
     static int currentSensor = READING_DHT; // static -> sätts endast EN gång (init)
     // för att minimiera jitter för "låg-prio" sensorer - läs asynkront, en sensor åt gången.
     switch (currentSensor)
@@ -74,9 +74,9 @@ void readPrio3Sensors(){
     case READING_DHT: 
         if (getDHTData()){
             // -- DEBUG --
-            Serial.print("Temp: ");
+            Serial.print("DHT11: ");
             Serial.print(node.sensors.indoorTemp, 1); // 1 decimal
-            Serial.print(" C | Fukt: ");
+            Serial.print(" °C | Humidity: ");
             Serial.print(node.sensors.indoorHumidity, 1);
             Serial.println(" %");
             // -- DEBUG --
@@ -86,13 +86,13 @@ void readPrio3Sensors(){
 
 
         currentSensor = READING_WATER; 
-        break;
+        return 0;
 
         
     case READING_WATER:
         //läs water leak
         Serial.println("Checking 'Water-Leak'..\n");
         currentSensor = READING_DHT;
-        break;
+        return 0;
     }
 };

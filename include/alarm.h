@@ -1,7 +1,7 @@
 #ifndef ALARM_H
 #define ALARM_H
 
-void checkAlarmStatus();
+int checkAlarmStatus();
 
 typedef enum
 {

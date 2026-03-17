@@ -38,7 +38,8 @@ void getDS18B20data(){
                 // lagrar temperatur från sensor: ID "0" på bussen
                 node.sensors.fireTemp = ds18b20.getTempCByIndex(0);
                 Serial.print("DS18B20: ");
-                Serial.println(node.sensors.fireTemp, 1); 
+                Serial.print(node.sensors.fireTemp, 1); 
+                Serial.println(" °C");
             }
 
             DS18B20_waitingForAnsware = false; // nu väntar vi inte längre.. sätt till false

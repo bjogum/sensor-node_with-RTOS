@@ -1,7 +1,7 @@
 #ifndef MQTT_CLIENT_H
 #define MQTT_CLIENT_H
 
-bool manageMQTT();
+int manageMQTT();
 void initSendMQTT();
 void sendMQTT();
 void receiveMQTT();

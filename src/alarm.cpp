@@ -33,7 +33,7 @@ System node = {
 };
 
 
-void checkAlarmStatus(){ 
+int checkAlarmStatus(){ 
   switch (node.alarmMode)
   {
   case STATE_ARMED_AWAY:
@@ -55,7 +55,7 @@ void checkAlarmStatus(){
       node.alarmStatus.waterLeak = true;
        Serial.println("\n--WATER-LEAK DETECTED--\n");
     }
-  break;
+    return 0;
 
   case STATE_ARMED_HOME:
     if (node.sensors.smokeSensor == true || (node.sensors.fireTemp >= DS18B20_ALARMING_TEMP)){
@@ -72,7 +72,7 @@ void checkAlarmStatus(){
       node.alarmStatus.waterLeak = true;
        Serial.println("\n--WATER-LEAK DETECTED--\n");
     }
-  break;
+    return 0;
 
   case STATE_DISARMED:
     if (node.sensors.smokeSensor == true || (node.sensors.fireTemp >= DS18B20_ALARMING_TEMP)){
@@ -88,7 +88,7 @@ void checkAlarmStatus(){
       if (node.sensors.indoorHumidity >= 70){  // bara för test
       Serial.println("\n--HIGH HUMIDITY DETECTED--\n");  // bara för test
       }
-  break;
+    return 0;
 
   }
 }
