@@ -8,44 +8,18 @@
 #include "indicateStatus.h"
 #include "wifi_manager.h"
 #include "mqtt_client.h"
+#include "sensor_motion.h"
+#include "sensor_reed.h"
 #define numOfPrio3Sensors 2
 
 void initComponents(){
     initWiFi();
     initDHT();
     initDS18B20();
+    initPIR();
+    initReed();
     initMatrix();
 }
-
-
-int readPrio1Sensors(){
-    static int currentSensor = READING_PIR; // static -> sätts endast EN gång (init)
-    // för att minimiera jitter för "låg-prio" sensorer - läs asynkront, en sensor åt gången.
-    switch (currentSensor)
-    {
-    case READING_PIR: 
-        // läs PIR
-        currentSensor = READING_REED1; 
-        return 0;
-        
-    case READING_REED1:
-        //läs reed1
-        currentSensor = READING_REED2; 
-        return 0;
-
-    case READING_REED2:
-        //läs reed2
-        currentSensor = INDICATE_STATUS; 
-        return 0;
-
-    case INDICATE_STATUS:
-        // indicate status (LED)
-        statusLED();
-
-        currentSensor = READING_PIR; 
-        return 0;
-    }
-};
 
 int readPrio2Sensors(){
     static int currentSensor = READING_DS18B20; // static -> sätts endast EN gång (init)
@@ -64,7 +38,6 @@ int readPrio2Sensors(){
         return 0;
     }
 };
-
 
 int readPrio3Sensors(){
     static int currentSensor = READING_DHT; // static -> sätts endast EN gång (init)
@@ -91,7 +64,7 @@ int readPrio3Sensors(){
         
     case READING_WATER:
         //läs water leak
-        Serial.println("Checking 'Water-Leak'..\n");
+        Serial.println("Checking 'Water-Leak'..\n"); 
         currentSensor = READING_DHT;
         return 0;
     }

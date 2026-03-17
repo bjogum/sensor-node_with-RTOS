@@ -3,18 +3,28 @@
 #include "sensor_dht11.h"
 #include "tasks.h"
 #include "alarm.h"
+#include "sensor_reed.h"
+#include "sensor_motion.h"
 #include <ArduinoBLE.h>
+
+extern "C" void SysTick_Handler(){
+  node.sysTime++;
+}
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // testar om detta behövs..
-  delay(2000); // testar om detta behövs..
+  while (!Serial); 
   initComponents();
-  // attachInterrupt --- HW interrupt: bryter pågående (lägre prioriterad) process omedelbart
+
+  // prio 1 sensors - HW interrupt 
+  attachInterrupt(digitalPinToInterrupt(reedPin), reedIsTriggerd , RISING);
+  attachInterrupt(digitalPinToInterrupt(pirPin), motionIsDetected , RISING);
+
+  // sysTick - starta HW klockan (& systick_handler)
+  SysTick_Config(SystemCoreClock / 1000);
 }
 
 void loop() { 
-  node.sysTime = millis();
   startingSystem();
   
   if (node.runStatus == RUNNING){

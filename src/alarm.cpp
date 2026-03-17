@@ -2,7 +2,7 @@
 #include "tasks.h"
 #include <Arduino.h>
 #include "alarm.h"
-#define DS18B20_ALARMING_TEMP 35 // Temp: ca 60 -> just for test: 35 
+#define DS18B20_ALARMING_TEMP 60 // Temp: ca 60
 
 //definierar node-strukten (samt deklarera nässlade struktar)
 System node = {
@@ -12,7 +12,7 @@ System node = {
     .bleIsActive = false,
     .mqttIsActive = false,
   },
-  .alarmMode = STATE_DISARMED,  // ska initieras som "STATE_DISARMED".
+  .alarmMode = STATE_ARMED_AWAY,  // <<------ BARA FÖR TEST ------ >> ska initieras som "STATE_DISARMED".
   .alarmStatus = {
     .intrusionAlarm = false,
     .fireAlarm = false,

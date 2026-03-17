@@ -6,7 +6,7 @@
 #include "wifi_manager.h"
 #include "indicateStatus.h"
 #include "mqtt_client.h"
-#define WAKE_UP_SYSTEM_MS 20000 // maybe 60s ? (MQ2 behöver tid..)
+#define WAKE_UP_SYSTEM_MS 20000 // kanske 60s ? (MQ2 + PIR behöver tid..)
 
 // 'TaskFunction' blir en definition av funktionspekare.
 typedef int (*TaskFunction)(void);
@@ -20,10 +20,9 @@ struct Tasks {
 
 // Tasks-array: "taskList" -> innehåller samtliga Tasks, med tillhörande parametrar) 
 Tasks taskList[] = {
-    {readPrio1Sensors, 20},     // Security sensors              -> 20ms?
     {readPrio2Sensors, 500},    // Saftey sensors                -> 300ms
     {readPrio3Sensors, 1500},   // Temp, fukt, lekage            -> 1500ms
-    {checkAlarmStatus, 100},    // Kolla om larm är aktivt  -> 1500ms
+    {checkAlarmStatus, 100},    // Kolla om larm är aktivt       -> 100ms
     //{manageBLE, 100,50},      // håll BLE aktivt & skcka data - lastRun 50ms ("offset"): underviker krock med Wifi-> 100ms
     {manageWiFi, 5000},         // håll WiFi aktivt & skcka data -> 5000ms
     {manageMQTT, 100},          // håll WiFi aktivt & skcka data -> 100ms
@@ -44,7 +43,7 @@ void taskScheduler(){
 
 void startingSystem(){
     if (node.runStatus == WAKING_UP){
-      if ((manageWiFi()) && (millis() >= WAKE_UP_SYSTEM_MS) && (manageMQTT())) {
+      if ((manageWiFi()) && (node.sysTime >= WAKE_UP_SYSTEM_MS) && (manageMQTT())) {
         node.runStatus = RUNNING;
         Serial.println("\n<<< SYSTEM IS READY >>>\n\n");
       }

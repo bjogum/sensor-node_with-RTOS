@@ -27,7 +27,7 @@ void initDS18B20() {
 void getDS18B20data(){
     if (!DS18B20_waitingForAnsware){    // om inte frågat om temp ännu, gör det..
         ds18b20.requestTemperatures();
-        DS18B20_ReqiuestTime = millis();    // räkna tiden från när vi frågar
+        DS18B20_ReqiuestTime = node.sysTime;   // räkna tiden från när vi frågar
         DS18B20_waitingForAnsware = true;
 
         } else {

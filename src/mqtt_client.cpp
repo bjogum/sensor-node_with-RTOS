@@ -47,7 +47,7 @@ int manageMQTT() {
     mqttClient.setConnectionTimeout(MQTT_CONNECTION_TIMEOUT);
 
     if ((node.sysTime - MQTTConnectTimer >= MQTT_RECONNECT_TIME) && (!node.connectionStatus.mqttIsActive) ){ 
-        MQTTConnectTimer = millis();
+        MQTTConnectTimer = node.sysTime;
             
         if (mqttClient.connect(broker, port)) { 
             node.connectionStatus.mqttIsActive = true;

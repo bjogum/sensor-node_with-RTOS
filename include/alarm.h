@@ -1,6 +1,10 @@
 #ifndef ALARM_H
 #define ALARM_H
 
+// PRIO-1 pins to monitor (HW interrupt)
+const int reedPin = 3;
+const int pirPin = 4;
+
 int checkAlarmStatus();
 
 typedef enum
@@ -59,7 +63,7 @@ typedef struct
     AlarmMode alarmMode;       // Disarmed | Armed home | Armed away
     AlarmReason alarmStatus;   // intrusionAlarm | fireAlarm | waterLeak | systemFailure
     SensorData sensors;         // all sensordata
-    unsigned long sysTime;      // System-tiden
+    volatile unsigned long sysTime;      // System-tiden
 }System;
 
 // deklarera variabel för systemet
