@@ -1,4 +1,4 @@
-## Alarm sensor node, with custom task scheduler → ![](https://img.shields.io/badge/status-under%20development-8A2BE2)
+## Alarm sensor node, with RTOS → ![](https://img.shields.io/badge/status-under%20development-8A2BE2)
 #### Overview
 This is a modular component of a larger IoT system (Smart Hub) consisting of multiple nodes.
 
