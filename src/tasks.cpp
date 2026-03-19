@@ -27,8 +27,10 @@ void initComponents(){
 void vAlarmTask(void *Params){
     // allt här körs EN gång
     for (;;){
-        // väntar på given semafor - dvs. ett HW-interrupt
+        // väntar på given semafor - dvs. ett HW-interrupt ... 
         if (xSemaphoreTake(xAlarmSemaphore, portMAX_DELAY) == pdPASS){
+
+            // Addera: READING_DS18B20 , vid hög temp larma - ENDAST denna går på tidsintevall.
 
             if (node.alarmMode == STATE_ARMED_AWAY && node.sensors.HWEvent_motionDetect){
                 node.sensors.motionDetect = true;
@@ -77,7 +79,6 @@ void vNetworkTask(void *Params){
 // Tidsstyrd
 void vSystemMonitorTask(void *Params){
     // Allt här körs EN gång
-    Serial.println("Monitor Task Started!");
     uint32_t lastRead_LowPrioSensors = 0;
 
     for (;;){
