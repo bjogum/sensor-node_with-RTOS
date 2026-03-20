@@ -34,7 +34,7 @@ The system utilizes Hardware Interrupts for immediate sensor detection and FreeR
 | ------------- |:-----------------------------:|:-------------:|:----------------:|:------------:|:-------------------:|
 | DHT11         | Indoor: temp + humidity       | D2 (P104)     |  Broker @ MQTT   | Yes          |                     |
 | DS18B20       | Temp, fire  (pull-up needed)  | D5 (P107)     | *(Broker @ MQTT)*  | Yes          |                     |
-| MQ2           | Gas, fire                     |  -            | *(Broker @ MQTT)*  |              |                     |
+| MQ2           | Gas, fire                     |  -            | *(Broker @ MQTT)*  |              | Yes                 |
 | Rain-sensor   | Water leak                    |  -            | *(Broker @ MQTT)*  |              |                     |
 | PIR           | Motion                        | D4 (P106)     | *(ESP32 @ BLE)*    |              | Yes                 |
 | Reed          | Open door or window           | D3 (P105)     | *(ESP32 @ BLE)*    | Yes          | Yes                 |
