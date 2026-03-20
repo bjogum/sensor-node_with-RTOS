@@ -1,3 +1,4 @@
+/*
 // --- definierar NÄR resp. funktion ska köras ---
 #include <stdio.h>
 #include <Arduino.h>
@@ -22,3 +23,4 @@ void startingSystem(){
       }
     }
 }
+*/

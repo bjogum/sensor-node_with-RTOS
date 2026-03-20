@@ -1,26 +1,39 @@
 // --- definierar HUR (sekvensen) och VAD som ska köras --- 
+#include <stdio.h>
+#include <Arduino.h>
+#include <RTC.h>
 #include "tasks.h"
 #include "alarm.h"
 #include "sensor_dht11.h"
-#include <stdio.h>
-#include <Arduino.h>
 #include "sensor_ds18b20.h"
 #include "indicateStatus.h"
 #include "wifi_manager.h"
 #include "mqtt_client.h"
 #include "sensor_motion.h"
 #include "sensor_reed.h"
-#include "scheduler.h"
-#define LOW_PRIO_SENSORS_READ 5000 // 30s (TEST: 5s)
+//#include "scheduler.h"
+#define LOW_PRIO_SENSORS_READ 2000 //  (TEST: 2s)
 
 void initComponents(){
+    RTC.begin();
     initDHT();
-    //initDS18B20();
+    initDS18B20();
     //initPIR();
     initReed();
     initMatrix();
 }
 
+int initTime(){
+  unsigned long epoch = WiFi.getTime(); 
+  
+  if (epoch != 0) {
+    RTCTime startTime(epoch);
+    RTC.setTime(startTime); // Nu är klockan ställd!
+    Serial.println("Clock synchronized!");
+    return true;
+  }
+  return false;
+}
 
 // RTOS: Task - hanterar LARM, inbrott+brand (PIR+REED + GAS+TEMP)
 // Händelsestyrd
@@ -28,7 +41,7 @@ void vAlarmTask(void *Params){
     // allt här körs EN gång
     for (;;){
         // väntar på given semafor - dvs. ett HW-interrupt, ELLER timeout 
-        BaseType_t xResult = xSemaphoreTake(xAlarmSemaphore, portMAX_DELAY); // timeout för checka brandlarm.. 2s? Verkar sänka mqtt..
+        BaseType_t xResult = xSemaphoreTake(xAlarmSemaphore, portMAX_DELAY); // DS18B20 här, verkar sänka mqtt.. one-wire?
 
             if (xResult == pdPASS){
                 if (node.sensors.HWEvent_motionDetect){
@@ -45,27 +58,20 @@ void vAlarmTask(void *Params){
                 node.sensors.HWEvent_reedSensor1 = false;
                 }
                 checkAlarmStatus();
-                xSemaphoreGive(xNetworkSemaphore);
-                
+                //xSemaphoreGive(xNetworkSemaphore); - Aktiveras först när vi har BLE..
             } else {
                 // går ENDAST på tidsintevall - oberoende semaphore, ~2000ms. --- OBS, avstängt nu.
-                getDS18B20data();
-                checkAlarmStatus();
-                if (node.alarmStatus.fireAlarm){
-                    xSemaphoreGive(xNetworkSemaphore);
                 }
             }
-        
         vTaskDelay(pdMS_TO_TICKS(20)); // pausa inte denna.
-    }
-}   
-
+}
 
 
 // RTOS: Task - hanterar nätverk -> WIFI, MQTT & (BLE..)
 // Händelsestyrd & tidsstyrd
 void vNetworkTask(void *Params){
     // körs bara EN gång
+    bool timeIsSet = false;
     Serial.println("Wifi Init..");
     initWiFi();
     Serial.println("Wifi Init: Complete!");
@@ -80,6 +86,11 @@ void vNetworkTask(void *Params){
         //manageBLE();
         if (wifiIsConnected()){
             manageMQTT();
+            if (!timeIsSet){
+                if (initTime()){
+                timeIsSet = true;
+                }
+            }
         }            
     }
 }
@@ -96,37 +107,15 @@ void vSystemMonitorTask(void *Params){
         if (node.sysTime - lastRead_LowPrioSensors >= LOW_PRIO_SENSORS_READ){
             readLowPrioSensors();
             lastRead_LowPrioSensors = node.sysTime;
-
-            if (node.sensors.waterLeak == true){
-                checkAlarmStatus();
-            }
+            
+            getDS18B20data();   // För brandlarm - bör ev. flyttas till Alarm Task med högre prio? (men stör MQTT-connection om de körs där nu pg.a one-wire??)
+            checkAlarmStatus();            
             xSemaphoreGive(xNetworkSemaphore);
         }
         // pausa tasken i 100ms för ge space för andra tasks.
         vTaskDelay(pdMS_TO_TICKS(100)); // pausa task, 100ms
     }
-    
 }
-
-
-// --- bör flyttas till RTOS "ALARM"-task --- å tas bort här
-int readPrio2Sensors(){
-    static int currentSensor = READING_DS18B20; // static -> sätts endast EN gång (init)
-    switch (currentSensor)
-    {
-    case READING_DS18B20: 
-        getDS18B20data();
-        currentSensor = READING_MQ2; 
-        return 0;
-
-        
-    case READING_MQ2:
-        Serial.println("Checking 'Smoke-sensor'..\n"); 
-        //läs smoke sensor
-        currentSensor = READING_DS18B20; 
-        return 0;
-    }
-};
 
 
 int readLowPrioSensors(){

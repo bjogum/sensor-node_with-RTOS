@@ -19,7 +19,7 @@ void setup() {
   xSystemMonitorSemaphore = xSemaphoreCreateBinary();
   xNetworkSemaphore = xSemaphoreCreateBinary();
 
-  //attachInterrupt(digitalPinToInterrupt(mq2Pin), smokeIsDetected, RISING);
+  //attachInterrupt(digitalPinToInterrupt(mq2Pin), smokeIsDetected, RISING); - Körs digitalt (DO).
   attachInterrupt(digitalPinToInterrupt(reedPin), reedIsTriggerd, RISING);
   attachInterrupt(digitalPinToInterrupt(pirPin), motionIsDetected, RISING);
 

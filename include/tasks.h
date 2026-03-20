@@ -22,6 +22,7 @@ void initComponents();
 int readLowPrioSensors();
 int readPrio2Sensors();
 int readPrio1Sensors();
+int initTime();
 
 
 

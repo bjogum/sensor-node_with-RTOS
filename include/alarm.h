@@ -15,7 +15,7 @@ int checkAlarmStatus();
 void vAlarmTask(void *Params);
 void vNetworkTask(void *Params);
 void vSystemMonitorTask(void *Params);
-
+void updCurrentTime(char* timestamp, size_t size);
 typedef enum
 {
     WAKING_UP,

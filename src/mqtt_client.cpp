@@ -3,10 +3,10 @@
 #include "wifi_manager.h"
 #include <ArduinoMqttClient.h>
 #include <ArduinoJson.h>
-#define MQTT_SEND_TIME 5000             // skicka MQTT varannan sek
-#define MQTT_RECONNECT_TIME 15000       // max reconnect intervall, 30s
-#define MQTT_CONNECTION_TIMEOUT 10000
-#define MQTT_HEARTBEAT 10000             // Broker rappoterar OFFLINE efter .. | Testar 10s
+#define MQTT_SEND_TIME 30000            // Hur ofta ska vi skicka mqtt.. Testar: 30s
+#define MQTT_RECONNECT_TIME 15000       // max reconnect intervall, Testar: 15s
+#define MQTT_CONNECTION_TIMEOUT 10000   
+#define MQTT_HEARTBEAT 10000            // | Testar 10s (LWT sker ~16s)
 #define BROKER_PORT 1883                // okrypt: 1883 - TLS, krypt: 8883
 #define BROKER_IP "192.168.1.100"
 
@@ -26,8 +26,8 @@ bool willRetain                  = true;
 int willQos                      = 1;
 
 //bool tryMQTTconnect = false;
-unsigned long MQTTConnectTimer = 15000;
-unsigned long MQTTLastSendTimer = 0;
+unsigned long MQTTConnectTimer = -15000; // Testar: för att connecta omedelbart vid uppstart..
+unsigned long MQTTLastSendTimer = -30000; // Testar: skicka första meddelandet omedelbart..
 
 int manageMQTT() {
 
@@ -36,9 +36,9 @@ int manageMQTT() {
         receiveMQTT();
     }
 
-    if ((node.sysTime - MQTTConnectTimer >= MQTT_RECONNECT_TIME) && (!mqttClient.connected()) ){  // prova ersätta: node.connectionStatus.mqttIsActive
+    if ((node.sysTime - MQTTConnectTimer >= MQTT_RECONNECT_TIME) && (!mqttClient.connected())){
         MQTTConnectTimer = node.sysTime;
-            
+        
         // testamente
         mqttClient.beginWill(willTopic, willRetain, willQos);
         mqttClient.print(willPayload);
@@ -46,7 +46,7 @@ int manageMQTT() {
 
         // mqtt settings
         mqttClient.setKeepAliveInterval(MQTT_HEARTBEAT);
-        mqttClient.setConnectionTimeout(MQTT_CONNECTION_TIMEOUT);
+        //mqttClient.setConnectionTimeout(MQTT_CONNECTION_TIMEOUT);
 
         if (mqttClient.connect(broker, port)) { 
             Serial.println("\n<< MQTT : Connecting.. >>\n");
