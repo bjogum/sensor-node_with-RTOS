@@ -46,7 +46,7 @@ int statusLED(bool alarming){
 }
 
 void vLEDTimerCallback(TimerHandle_t xTimer){
-    if (!node.connectionStatus.wifiIsActive && !node.connectionStatus.mqttIsActive){
+    if (!node.connectionStatus.wifiIsActive || !node.connectionStatus.mqttIsActive || !node.connectionStatus.bleIsActive){
         xTimerChangePeriod(xLEDTimer, pdMS_TO_TICKS(200), 0);
     } else {
         xTimerChangePeriod(xLEDTimer, pdMS_TO_TICKS(idleLEDSpeed), 0);

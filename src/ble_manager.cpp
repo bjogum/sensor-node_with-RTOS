@@ -1,5 +1,6 @@
 #include <ArduinoBLE.h>
 #include <stdbool.h>
+#include "alarm.h"
 
 // UUID https://www.uuidgenerator.net/
 BLEService customService("19B10000-E8F2-537E-4F6C-D104768A1214");
@@ -34,15 +35,14 @@ bool initBLE(){
 
 
 void manageBLE() {
-    static bool bleClientConnected = false;
     BLEDevice central = BLE.central();
 
   // När en klient ansluter
     if (central) {
-      if (!bleClientConnected){
+      if (!node.connectionStatus.bleIsActive){
         Serial.print("BLE: Ansluten till: ");
         Serial.println(central.address()); 
-        bleClientConnected = true;
+        node.connectionStatus.bleIsActive = true;
       }
          
       // Kör så länge klienten är ansluten [testar med IF för att göra den non-blocking]
@@ -54,7 +54,7 @@ void manageBLE() {
         Serial.println(sensorValue);
       }  else {
         Serial.println("BLE: Klient kopplade ner");
-        bleClientConnected = false;
+        node.connectionStatus.bleIsActive = false;
       }
     } 
     // Viktigt: låt BLE jobba [oavsätt om vi är connectade eller ej]

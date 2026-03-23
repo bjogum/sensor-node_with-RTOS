@@ -19,7 +19,7 @@ The system utilizes Hardware Interrupts for immediate sensor detection and FreeR
 **Visual Diagnostic (LED matrix)**
 * Flash patterns:
   * System ready: Slow blink
-  * Not connected to WiFi/MQTT: Fast blink
+  * Not connected to WiFi, MQTT or BLE: Fast blink
 
 * LED states: 
   * Idle → 2x2 center LEDs
