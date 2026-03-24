@@ -11,6 +11,10 @@ SemaphoreHandle_t xSystemMonitorSemaphore;
 SemaphoreHandle_t xNetworkSemaphore;
 TimerHandle_t xLEDTimer;
 
+extern "C" void vApplicationTickHook(void) {
+  node.sysTime++;
+}
+
 void setup() {
   Serial.begin(115200);
   while(!Serial);
@@ -38,8 +42,4 @@ void setup() {
 }
 
 void loop() {
-}
-
-extern "C" void vApplicationTickHook(void) {
-  node.sysTime++;
 }

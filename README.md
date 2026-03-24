@@ -29,7 +29,8 @@ The system utilizes Hardware Interrupts for immediate sensor detection and FreeR
 #### Upcomming
 
 * Implement & integrate other sensors (MQ2, PIR, Water-leak)
-* JSON .. ? 
+* RTOS: Queue, for alarms.
+* BLE: Sending alarm "struct" when trigged
 
 #### Hardware
 * MCU: Arduino Uno R4 WiFi

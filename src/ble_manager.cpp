@@ -5,9 +5,10 @@
 // UUID https://www.uuidgenerator.net/
 BLEService customService("19B10000-E8F2-537E-4F6C-D104768A1214");
 
+// BLEIndicate - skickar med ACK, "leveransgaranti"
 BLEIntCharacteristic levelCharacteristic(
   "19B10001-E8F2-537E-4F6C-D104768A1214",
-  BLERead | BLENotify
+  BLERead | BLEIndicate
 );
 
 int sensorValue = 0;
