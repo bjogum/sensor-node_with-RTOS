@@ -31,7 +31,6 @@ void setup() {
   xAlarmSemaphore = xSemaphoreCreateBinary();
   xSystemMonitorSemaphore = xSemaphoreCreateBinary();
   xNetworkSemaphore = xSemaphoreCreateBinary();
-  xBLESemaphore = xSemaphoreCreateBinary();
   xAlarmQueue = xQueueCreate(10, sizeof(AlarmInfo));
 
   //attachInterrupt(digitalPinToInterrupt(mq2Pin), smokeIsDetected, RISING); - Körs digitalt (DO).
@@ -40,7 +39,6 @@ void setup() {
 
   xTaskCreate(vAlarmTask, "ALARM", 192, NULL, 4, NULL); // OBS! Kan behöva ökas när vi ökar antal sensorer här.
   xTaskCreate(vNetworkTask, "WIFI", 1024, NULL, 3, NULL);
-  //xTaskCreate(vBLETask, "BLE", 2048, NULL, 3, NULL); // TESTAR..
   xTaskCreate(vSystemMonitorTask, "MONITOR", 192, NULL, 1, NULL);
   
   vTaskStartScheduler();
