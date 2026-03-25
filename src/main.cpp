@@ -38,7 +38,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(pirPin), motionIsDetected, RISING);
 
   xTaskCreate(vAlarmTask, "ALARM", 192, NULL, 4, NULL); // OBS! Kan behöva ökas när vi ökar antal sensorer här.
-  xTaskCreate(vNetworkTask, "WIFI", 1024, NULL, 3, NULL);
+  xTaskCreate(vNetworkTask, "NET", 1024, NULL, 3, NULL);
   xTaskCreate(vSystemMonitorTask, "MONITOR", 192, NULL, 1, NULL);
   
   vTaskStartScheduler();
