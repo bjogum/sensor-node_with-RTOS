@@ -19,6 +19,7 @@ void initComponents(){
     initDHT();
     initDS18B20();
     //initPIR();
+    //initMQ2();
     initReed();
     initMatrix();
 }
@@ -58,11 +59,11 @@ void vAlarmTask(void *Params){
                 //xSemaphoreGive(xNetworkSemaphore);  // Aktiveras först för BLE, alt. MQTT för brandlarmet.
             } else {
                 // går ENDAST på tidsintevall - oberoende semaphore, ~2000ms. 
-                getDS18B20data(); // TESTAR
+                getDS18B20data();
                 }
 
         checkAlarmStatus(); // Checka om något larm är triggat.
-        vTaskDelay(pdMS_TO_TICKS(20)); // // TESTAR
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 
@@ -82,7 +83,7 @@ void vNetworkTask(void *Params){
         
         // körs ALLTID när loopen vaknar;
         manageWiFi();
-        manageBLE(); // TESTAR .. 
+        manageBLE();
         if (wifiIsConnected()){
             manageMQTT();
             if (!timeIsSet){

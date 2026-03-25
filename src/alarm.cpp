@@ -133,4 +133,6 @@ int checkAlarmStatus(){
   case STATE_DISARMED:
     return 0;
   }
+
+  alarmInfo =  {NONE, 0};
 }
