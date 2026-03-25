@@ -9,6 +9,8 @@
 #define DS18B20_ALARMING_TEMP 60 // Temp: ca 60
 
 AlarmInfo alarmInfo =  {NONE, 0};
+uint32_t lastFireTimer;
+uint32_t lastWaterLeakTimer;
 
 char timestamp[25];
 
@@ -49,33 +51,30 @@ System node = {
 
 
 int checkAlarmStatus(){ 
-  // Water-leak
-  if (node.sensors.waterLeak == true){
+  // WATER-LEAK - skicka bara denna via MQTT ?
+  if ((node.sysTime - lastWaterLeakTimer >= 15000) && node.sensors.waterLeak == true){
     node.alarmStatus.waterLeak = true;
+    lastWaterLeakTimer = node.sysTime;
     
-    // lagrar vad & när i struct.
-    alarmInfo.time = getUnixTime();
-    alarmInfo.trigger = WATER;
-    // lägg i Queue!
-    xQueueSend(xAlarmQueue, &alarmInfo, 0);
+    // Tidstämpel på denna...?
+    //alarmInfo.trigger = WATER;
+    //sendAlarm(); -- endast MQTT, ej BLE?
 
-    Serial.print(timestamp);
     Serial.println("\n--WATER-LEAK DETECTED--\n");
   } else {
     node.alarmStatus.waterLeak = false;
   }
-  // Fire
-  if (node.sensors.smokeSensor == true || (node.sensors.fireTemp >= DS18B20_ALARMING_TEMP)){
+
+
+  // FIRE
+  if ((node.sysTime - lastFireTimer >= 5000) && (node.sensors.smokeSensor == true || (node.sensors.fireTemp >= DS18B20_ALARMING_TEMP))){
     node.alarmStatus.fireAlarm = true;
+    lastFireTimer = node.sysTime;
 
     // lagrar vad & när i struct.
-    alarmInfo.time = getUnixTime();
     alarmInfo.trigger = FIRE;
-    // lägg i Queue!
-    xQueueSend(xAlarmQueue, &alarmInfo, 0);
+    sendAlarm();
 
-    // time stamp 
-    Serial.print(timestamp);
     Serial.println("\n--FIRE DETECTED--\n");
   } else {
     node.alarmStatus.fireAlarm = false;
@@ -86,53 +85,57 @@ int checkAlarmStatus(){
   {
   case STATE_ARMED_AWAY:
     // Reed (door / widnow sensor)
-    if (node.sensors.reedSensor1 == true){
+    if (node.alarmStatus.intrusionAlarm = false && node.sensors.reedSensor1 == true){
       node.alarmStatus.intrusionAlarm = true;
+
       // lagrar vad & när i struct.
-      alarmInfo.time = getUnixTime();
       alarmInfo.trigger = DOOR;
-      // lägg i Queue!
-      xQueueSend(xAlarmQueue, &alarmInfo, 0);
+      sendAlarm();
       
-      // time stamp 
-      Serial.print(timestamp);
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
+    } else {
+      node.alarmStatus.intrusionAlarm = false;
     }
 
     // Motion
-    if (node.sensors.motionDetect == true){
+    if (node.alarmStatus.intrusionAlarm = false && node.sensors.motionDetect == true){
       node.alarmStatus.intrusionAlarm = true;
 
-      // lagrar vad & när i struct.
-      alarmInfo.time = getUnixTime();
       alarmInfo.trigger = MOTION;
-      // lägg i Queue!
-      xQueueSend(xAlarmQueue, &alarmInfo, 0);
+      sendAlarm();
 
-      // time stamp 
-      Serial.print(timestamp);
       Serial.println("\n--MOTION DETECTED--\n");
+    } else {
+      node.alarmStatus.intrusionAlarm = false;
     }
     return 0;
 
   case STATE_ARMED_HOME:
     // Reed (door / widnow sensor)
-      if (node.sensors.reedSensor1 == true){
+      if (node.alarmStatus.intrusionAlarm = false && node.sensors.reedSensor1 == true){
       node.alarmStatus.intrusionAlarm = true;
-      // lagrar vad & när i struct.
-      alarmInfo.time = getUnixTime();
-      alarmInfo.trigger = DOOR;
-      // lägg i Queue!
-      xQueueSend(xAlarmQueue, &alarmInfo, 0);
 
-      Serial.print(timestamp);
+      alarmInfo.trigger = DOOR;
+      sendAlarm();
+
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
+    } else {
+      node.alarmStatus.intrusionAlarm = false;
     }
     return 0;
 
   case STATE_DISARMED:
     return 0;
-  }
+  } 
+}
 
+
+void sendAlarm(){
+  alarmInfo.time = getUnixTime();
+
+  for (int i = 0; i<3 ; i++){
+    xQueueSend(xAlarmQueue, &alarmInfo, 0);
+    vTaskDelay(pdMS_TO_TICKS(50));
+  }
   alarmInfo =  {NONE, 0};
 }

@@ -35,7 +35,7 @@ bool initBLE(){
 }
 
 
-void manageBLE() {
+void manageBLE(AlarmInfo *alarmData) {
     BLEDevice central = BLE.central();
 
   // När en klient ansluter
@@ -48,12 +48,16 @@ void manageBLE() {
          
       // Kör så länge klienten är ansluten [testar med IF för att göra den non-blocking]
       if (central.connected()) {     
-         
+        
+        // skcikar mottagen alarmData.. (trigger + Unix-tid)
+        levelCharacteristic.writeValue((uint8_t *)alarmData, sizeof(alarmData)); 
+        
+        // bara DEBUG
+        Serial.print("\nBLE: data sent: ");
+        Serial.print(alarmData->trigger);
+        Serial.print("\nBLE: time sent: ");
+        Serial.println(alarmData->time);
 
-        // ersätt med: 'alarmInfo'
-        levelCharacteristic.writeValue((uint8_t *)&alarmInfo, sizeof(alarmInfo));  
-
-        Serial.print("BLE: Sent!\n");
       }  else {
         Serial.println("BLE: Klient kopplade ner");
         node.connectionStatus.bleIsActive = false;
