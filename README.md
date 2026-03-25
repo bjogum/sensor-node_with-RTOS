@@ -14,8 +14,8 @@ The system utilizes Hardware Interrupts for immediate sensor detection and FreeR
 
 #### Alarm-procedure ####
 
-When a alarm is detected, at fire or intrution:
-1) The system notis the alarm and update the state machine
+When an alarm is detected - at fire or intrution:
+1) The system notice the alarm, and update the state machine
 2) The alarm info is stored in a packed struct of 5 bytes, "AlarmInfo"
    1) Timestamp is added (unix time)
    2) Alarmtype is added (what kind of alarm)
