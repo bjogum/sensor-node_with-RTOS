@@ -42,7 +42,7 @@ MQTT (Tx):
 ## Upcomming
 
 * Implement & integrate other sensors (MQ2, PIR, Water-leak)
-* BLE (Rx) - Alarm state from ESP32 (GW)
+* BLE (Rx) - Receive and handle alarm state from ESP32 (GW)
 
 ---
 ## Hardware
