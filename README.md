@@ -43,6 +43,7 @@ MQTT (Tx):
 
 * Implement & integrate other sensors (MQ2, PIR, Water-leak)
 * BLE (Rx) - Receive and handle alarm state from ESP32 (GW)
+* Add time-zone (ezTime ?)
 
 ---
 ## Hardware
