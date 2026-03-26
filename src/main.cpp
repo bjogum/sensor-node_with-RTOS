@@ -22,12 +22,9 @@ void setup() {
   initComponents();
   Serial.println("--- STARTING SYSTEM ---");
 
-  // skapa timer
   xLEDTimer = xTimerCreate("LED_STATUS", pdMS_TO_TICKS(idleLEDSpeed), pdTRUE, 0, vLEDTimerCallback);
-  // starta timer
   xTimerStart(xLEDTimer, 0);
 
-  //xRadioMutex = xSemaphoreCreateMutex();
   xAlarmSemaphore = xSemaphoreCreateBinary();
   xSystemMonitorSemaphore = xSemaphoreCreateBinary();
   xNetworkSemaphore = xSemaphoreCreateBinary();

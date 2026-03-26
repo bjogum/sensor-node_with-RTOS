@@ -87,7 +87,7 @@ void vNetworkTask(void *Params){
 
         // körs endast vid TIMEOUT
         if (!xResult){
-            heartbeat = {NONE, 0}; // skicka tid äkta..?
+            heartbeat = {NONE, 0}; // skicka riktig tid..?
             manageBLE(&heartbeat);
             manageWiFi();
             if (wifiIsConnected()){
