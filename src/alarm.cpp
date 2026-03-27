@@ -56,9 +56,9 @@ int checkAlarmStatus(){
     node.alarmStatus.waterLeak = true;
     lastWaterLeakTimer = node.sysTime;
     
-    // Tidstämpel på denna...?
+    //Tidstämpel på denna...?
     //alarmInfo.trigger = WATER;
-    //sendAlarm(); -- endast MQTT, ej BLE?
+    //dispatchAlarm(); -- endast MQTT, ej BLE?
 
     Serial.println("\n--WATER-LEAK DETECTED--\n");
   } else {
@@ -73,7 +73,7 @@ int checkAlarmStatus(){
 
     // lagrar vad & när i struct.
     alarmInfo.trigger = FIRE;
-    sendAlarm();
+    dispatchAlarm();
 
     Serial.println("\n--FIRE DETECTED--\n");
   } else {
@@ -90,7 +90,7 @@ int checkAlarmStatus(){
 
       // lagrar vad & när i struct.
       alarmInfo.trigger = DOOR;
-      sendAlarm();
+      dispatchAlarm();
       
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
     } else {
@@ -102,7 +102,7 @@ int checkAlarmStatus(){
       node.alarmStatus.intrusionAlarm = true;
 
       alarmInfo.trigger = MOTION;
-      sendAlarm();
+      dispatchAlarm();
 
       Serial.println("\n--MOTION DETECTED--\n");
     } else {
@@ -116,7 +116,7 @@ int checkAlarmStatus(){
       node.alarmStatus.intrusionAlarm = true;
 
       alarmInfo.trigger = DOOR;
-      sendAlarm();
+      dispatchAlarm();
 
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
     } else {
@@ -129,13 +129,15 @@ int checkAlarmStatus(){
   } 
 }
 
+// packa larmet med tidstämpel och skickar iväg till kö.
+void dispatchAlarm(){
 
-void sendAlarm(){
+  // sätt tidsstämplen för larmet
   alarmInfo.time = getUnixTime();
 
-  for (int i = 0; i<3 ; i++){
-    xQueueSend(xAlarmQueue, &alarmInfo, 0);
-    vTaskDelay(pdMS_TO_TICKS(50));
-  }
+  // skicka larmpaketet till kön
+  xQueueSend(xAlarmQueue, &alarmInfo, 0);
+
+  // nolla larmet
   alarmInfo =  {NONE, 0};
 }

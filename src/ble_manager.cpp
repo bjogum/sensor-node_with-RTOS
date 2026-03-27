@@ -1,6 +1,7 @@
 #include <ArduinoBLE.h>
 #include <stdbool.h>
 #include "alarm.h"
+#define ALARM_SEND_REPEAT 3
 
 // UUID https://www.uuidgenerator.net/
 BLEService customService("19B10000-E8F2-537E-4F6C-D104768A1214");
@@ -35,7 +36,7 @@ bool initBLE(){
 }
 
 
-void manageBLE(AlarmInfo *alarmData) {
+void manageBLE(const AlarmInfo *alarmData) {
     BLEDevice central = BLE.central();
 
   // När en klient ansluter
@@ -49,15 +50,15 @@ void manageBLE(AlarmInfo *alarmData) {
       // Kör så länge klienten är ansluten [testar med IF för att göra den non-blocking]
       if (central.connected()) {     
         
-        // skcikar mottagen alarmData.. (trigger + Unix-tid)
+        // larmdata skickas via BLE - alt heartbeat 'NULL'
         levelCharacteristic.writeValue((uint8_t *)alarmData, sizeof(alarmData)); 
-        
-        // bara DEBUG
+
+        // DEBUG
         Serial.print("\nBLE: data sent: ");
         Serial.print(alarmData->trigger);
         Serial.print("\nBLE: time sent: ");
         Serial.println(alarmData->time);
-
+        
       }  else {
         Serial.println("BLE: Klient kopplade ner");
         node.connectionStatus.bleIsActive = false;

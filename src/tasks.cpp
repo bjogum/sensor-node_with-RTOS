@@ -73,9 +73,9 @@ void vAlarmTask(void *Params){
 // Händelsestyrd & tidsstyrd
 void vNetworkTask(void *Params){
     // körs bara EN gång
+    const AlarmInfo heartbeat = {NONE, 0}; // heartbeat params
+    AlarmInfo alarmInfoToSend;  // Skarpt larm
     bool timeIsSet = false;
-    AlarmInfo alarmInfoToSend; //  "enkel heartbeat" eller "skaprt larm"
-    AlarmInfo heartbeat;
     initWiFi();
     initBLE();
     Serial.println("WiFi & BLE: Init - Complete!");
@@ -87,19 +87,17 @@ void vNetworkTask(void *Params){
 
         // körs endast vid TIMEOUT
         if (!xResult){
-            heartbeat = {NONE, 0}; // skicka riktig tid..?
             manageBLE(&heartbeat);
             manageWiFi();
             if (wifiIsConnected()){
                 manageMQTT();
                 if (!timeIsSet){
-                    if (initTime()){
-                        timeIsSet = true;
-                    }
+                    timeIsSet = initTime();
                 }
-            }    
+            }
+            
         } else {
-            // Körs endast vid KÖ / LARM
+            // Körs endast vid KÖ / LARM (= pdPASS/TRUE)
             manageBLE(&alarmInfoToSend);
         }
         vTaskDelay(100);

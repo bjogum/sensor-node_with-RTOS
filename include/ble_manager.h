@@ -2,6 +2,6 @@
 #define BLE_MANAGER_H
 
 bool initBLE();
-void manageBLE(AlarmInfo *alarmData);
+void manageBLE(const AlarmInfo *alarmData);
 
 #endif
