@@ -73,8 +73,8 @@ void vAlarmTask(void *Params){
 // Händelsestyrd & tidsstyrd
 void vNetworkTask(void *Params){
     // körs bara EN gång
-    const AlarmInfo heartbeat = {NONE, 0}; // heartbeat params
-    AlarmInfo alarmInfoToSend;  // Skarpt larm
+    const AlarmInfo heartbeat = {NONE, 0};  // Heartbeat params
+    AlarmInfo alarmInfoToSend;              // Skarpt larm
     bool timeIsSet = false;
     initWiFi();
     initBLE();
@@ -110,10 +110,7 @@ void vSystemMonitorTask(void *Params){
     // Allt här körs EN gång
 
     for (;;){
-        readLowPrioSensors();
-        checkAlarmStatus();            
-        xSemaphoreGive(xNetworkSemaphore);
-
+        readLowPrioSensors();         
         vTaskDelay(pdMS_TO_TICKS(30000)); // pausa task, 30s
     }
 }
