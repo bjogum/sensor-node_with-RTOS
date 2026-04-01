@@ -1,6 +1,7 @@
 #include "alarm.h"
 #include "mqtt_client.h"
 #include "wifi_manager.h"
+#include "certificate.h"
 #include <ArduinoMqttClient.h>
 //#include <ArduinoJson.h> - används inte ännu..
 #include "indicateStatus.h"
@@ -8,14 +9,13 @@
 #define MQTT_RECONNECT_TIME 60000       // max reconnect intervall, Testar: 15s
 #define MQTT_CONNECTION_TIMEOUT 5000   
 #define MQTT_HEARTBEAT 10000            // | Testar 10s (LWT sker ~16s)
-#define BROKER_PORT 1883                // okrypt: 1883 - TLS, krypt: 8883
-#define BROKER_IP "192.168.1.100"
+#define BROKER_PORT 8883                // okrypt: 1883 - TLS, krypt: 8883
 
-WiFiClient wifiClient;
+WiFiSSLClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
 int port                         = BROKER_PORT;
-const char broker[]              = BROKER_IP;
+const char broker[]              = ZeroIP;
 const char indoorTempTopic[]     = "sensor/indoorTemp";
 const char indoorHumidTopic[]    = "sensor/indoorHumidity";
 const char waterleakTopic[]      = "sensor/waterleak";
@@ -29,6 +29,12 @@ int willQos                      = 1;
 //bool tryMQTTconnect = false;
 unsigned long MQTTConnectTimer = -MQTT_RECONNECT_TIME; // Testar: för att connecta omedelbart vid uppstart..
 unsigned long MQTTLastSendTimer = -MQTT_SEND_TIME; // Testar: skicka första meddelandet omedelbart..
+
+void initCredentials(){
+
+    wifiClient.setCACert(root_ca);
+    mqttClient.setUsernamePassword(MQTT_USER, MQTT_PASS);
+}
 
 int manageMQTT() {
 

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <Arduino.h>
 #include <RTC.h>
+#include <WiFiUdp.h> // udp
+#include <NTPClient.h> // NTP clock
 #include "tasks.h"
 #include "alarm.h"
 #include "sensor_dht11.h"
@@ -15,6 +17,9 @@
 #define LOW_PRIO_SENSORS_READ 2000 //  (TEST: 2s)
 
 void initComponents(){
+    RTC.begin();
+    initCredentials();
+    //initBLE();
     initDHT();
     initDS18B20();
     //initPIR();
@@ -23,19 +28,44 @@ void initComponents(){
     initMatrix();
 }
 
-int initTime(){
-    // starta 'RTC'-modulen och ställ klockan
-    RTC.begin();
-    unsigned long epoch = WiFi.getTime(); 
+// int initTime(){
+//   unsigned long epoch = WiFi.getTime(); 
   
-    if (epoch != 0) {
-        RTCTime startTime(epoch);
-        RTC.setTime(startTime); // nu är klockan ställd
-        Serial.println("RTC: Clock synchronized!");
-    return true;
-  }
-  return false;
-}
+//   if (epoch != 0) {
+    // RTCTime startTime(epoch);
+    // RTC.setTime(startTime); // Nu är klockan ställd!
+    // Serial.println("RTC: Clock synchronized!");
+    // return true;
+//   }
+//   return false;
+// }
+
+int initTime(){ 
+
+        WiFiUDP ntpUDP;
+        NTPClient timeClient(ntpUDP, ZeroIP, 0, 60000); // Hämtar tid från Pi Accesspunkt
+
+        int attempts = 0;
+
+        timeClient.begin();
+
+        // Single loop: forceUpdate() returns true only on a successful packet receipt
+        while (!timeClient.forceUpdate() && attempts++ < 5) {
+            delay(1000); 
+        }
+
+        unsigned long epoch = timeClient.getEpochTime();
+        
+        if (epoch > 10000000) { 
+            RTCTime rtcTime(epoch);
+            RTC.setTime(rtcTime);
+            Serial.print("RTC Synced: "); Serial.println(epoch);
+            return true;
+        }
+
+        Serial.println("RTC: NTP Failed");
+        return false;
+    }
 
 // RTOS: Task - hanterar LARM, inbrott+brand (PIR+REED + GAS+TEMP)
 // Händelsestyrd

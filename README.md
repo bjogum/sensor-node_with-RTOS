@@ -70,14 +70,46 @@ MQTT (Tx):
 ---
 ## Setup - Info
 
-1) Update your WIFI: SSID + Password → plattformio.ini
-2) Update your Broker/Zero IP adress → mqtt_client.cpp
+When an alarm is detected - at fire or intrution:
+1) The system notice the alarm, and update the state machine
+2) The alarm info is stored in a packed struct of 5 bytes, "AlarmInfo"
+   1) Timestamp is added (unix time)
+   2) Alarmtype is added (what kind of alarm)
+3) The alarm info is sending three times to a queue (AlarmQueue)
+4) The xNetworkTask wake up at queue - and send the alarm to BLE.
 
-**Visual Diagnostic (LED matrix)**
-* Flash patterns:
-  * System ready: Slow blink
-  * Not connected to WiFi, MQTT or BLE: Fast blink
+---
+## Comminucation: BLE & MQTT 
 
-* LED states: 
-  * Idle → 2x2 center LEDs
-  * Alarming → ALL matrix LEDs
+BLE (Tx) - `Indicate with handshake`:
+  * Heartbet: Every 5s 
+  * Send critical alarms, as packages.
+
+MQTT (Tx):
+* Heartbet: Every 10s
+* Has Will & Testament (LWT)
+  * If the sensor node stops sending heartbeats, an 'OFFLINE' status will be published by the Broker.
+* Send info every 30s: temp/humidity & ( soon water leak )
+
+---
+## Changelog
+### [2026-03-31] - MQTT & NTP Updates
+- Added TLS to current MQTT/WiFi management.
+- Switched time synch to local Access Point(Zero) to avoid "homerouter" config dependency.
+- Added `build_flags` for MQTT Broker and NTP Server configuration in `platformio.ini`.
+
+* TLS
+    -IMPORTANT!-
+    To circumvent unstable packet reassembly(by sensornode), server.crt may NOT exceed 1,460 bytes 
+    and ca.crt must be excluded from handshake payload! (se hemmahubb/guide)
+
+  To manually add your certificate with proper format, use the helper-tool to avoid SSL errors; 
+
+    1. Inspect->copy->paste ca.crt(root certificate) from your broker(Zero) into the converter/formatter below:
+    https://unreeeal.github.io/ssl_esp.html
+    2. Create ./src/certificate.cpp and paste the helper-tool output in the file.
+
+* Time synch
+    To use the new timesync your AP is required to have a timeserver, ex. ntpsec(se hemmahubb/guide). 
+    If you prefer using WiFi.getTime(), just comment out the new initTime() and de-comment the old one.
+
