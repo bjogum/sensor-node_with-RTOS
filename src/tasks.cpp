@@ -59,7 +59,7 @@ int initTimeNTP(){
         }
 
         Serial.println("RTC: NTP Failed");
-        return initTimeWiFi();
+        return false;
     }
 
 // RTOS: Task - hanterar LARM, inbrott+brand (PIR+REED + GAS+TEMP)
@@ -105,11 +105,15 @@ void vNetworkTask(void *Params){
     for (;;){
         manageWiFi();
         if (wifiIsConnected()){
+
+            // sätter tiden @ WIFI
             if (!node.timeIsSet){
                 node.timeIsSet = initTimeWiFi();
             }
 
             manageMQTT();
+
+            // synca tiden med broker
             if (!node.NTCsynced && node.connectionStatus.mqttIsActive){
                 node.NTCsynced = initTimeNTP();
             }
