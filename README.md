@@ -25,9 +25,10 @@ This repository manages all sensor data, running on an Arduino Uno R4 WiFi. The 
 ## Architecture - RTOS & Tasks
 
 The system utilizes Hardware Interrupts for immediate sensor detection and FreeRTOS for task orchestration and Binary Semaphores.
-* Priority 3 (High): Critical alarm events (PIR/Reed/MQ2/DS18B20) via hardware interrupts & semaphores.
-* Priority 2 (Medium): Network communication (WiFi/MQTT/BLE).
-* Priority 1 (Low): System monitoring (Temp/Water leak).
+* Priority 4 (Highest): Critical alarm events (PIR/Reed/MQ2/DS18B20) via hardware interrupts & semaphores.
+* Priority 3 : Bluetooth communication (BLE) - sending critiala alarms.
+* Priority 2 : Network communication (WiFi/MQTT).
+* Priority 1 : System monitoring (Temp/Water leak).
 * Software Timer: Used for a real-time LED status indication, without the memory cost of a dedicated task.
 
 ---
