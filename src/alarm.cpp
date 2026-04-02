@@ -47,6 +47,8 @@ System node = {
     .waterLeak = false,
   },
   .sysTime = 0,
+  .timeIsSet = false,
+  .NTCsynced = false,
 };
 
 
@@ -133,7 +135,9 @@ int checkAlarmStatus(){
 void dispatchAlarm(){
 
   // sätt tidsstämplen för larmet
-  alarmInfo.time = getUnixTime();
+  if (node.timeIsSet){
+    alarmInfo.time = getUnixTime();
+  }
 
   // skicka larmpaketet till kön
   xQueueSend(xAlarmQueue, &alarmInfo, 0);

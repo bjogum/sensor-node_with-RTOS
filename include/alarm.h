@@ -17,6 +17,7 @@ void vAlarmTask(void *Params);
 void vNetworkTask(void *Params);
 void vSystemMonitorTask(void *Params);
 void updCurrentTime(char* timestamp, size_t size);
+void vBLETask(void *Params);
 void dispatchAlarm();
 
 typedef enum
@@ -98,6 +99,8 @@ typedef struct
     AlarmReason alarmStatus;   // intrusionAlarm | fireAlarm | waterLeak | systemFailure
     SensorData sensors;         // all sensordata
     volatile unsigned long sysTime;      // System-tiden
+    bool timeIsSet;             // Clock is synchronized
+    bool NTCsynced;
 }System;
 
 // deklarera variabel för systemet

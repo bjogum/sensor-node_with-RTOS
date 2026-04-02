@@ -25,31 +25,28 @@ void initComponents(){
     initMatrix();
 }
 
-// int initTime(){
-//   unsigned long epoch = WiFi.getTime(); 
+// ställer klockan om broker saknas (denna borde kunnas kan tas bort sen?)
+int initTimeWiFi(){
+    unsigned long epoch = WiFi.getTime(); 
   
-//   if (epoch != 0) {
-    // RTCTime startTime(epoch);
-    // RTC.setTime(startTime); // Nu är klockan ställd!
-    // Serial.println("RTC: Clock synchronized!");
-    // return true;
-//   }
-//   return false;
-// }
+    if (epoch != 0) {
+        RTCTime startTime(epoch);
+        RTC.setTime(startTime); // Nu är klockan ställd!
+        Serial.println("RTC: Clock synchronized!");
+        return true;
+   }
+        return false;
+}
 
-int initTime(){ 
+int initTimeNTP(){ 
         RTC.begin();
         WiFiUDP ntpUDP;
         NTPClient timeClient(ntpUDP, ZeroIP, 0, 60000); // Hämtar tid från Pi Accesspunkt
 
-        int attempts = 0;
-
         timeClient.begin();
 
         // Single loop: forceUpdate() returns true only on a successful packet receipt
-        while (!timeClient.forceUpdate() && attempts++ < 5) {
-            delay(1000); 
-        }
+        timeClient.forceUpdate();
 
         unsigned long epoch = timeClient.getEpochTime();
         
@@ -57,11 +54,12 @@ int initTime(){
             RTCTime rtcTime(epoch);
             RTC.setTime(rtcTime);
             Serial.print("RTC Synced: "); Serial.println(epoch);
+            node.NTCsynced = true;
             return true;
         }
 
         Serial.println("RTC: NTP Failed");
-        return false;
+        return initTimeWiFi();
     }
 
 // RTOS: Task - hanterar LARM, inbrott+brand (PIR+REED + GAS+TEMP)
@@ -100,33 +98,23 @@ void vAlarmTask(void *Params){
 // Händelsestyrd & tidsstyrd
 void vNetworkTask(void *Params){
     // körs bara EN gång
-    const AlarmInfo heartbeat = {NONE, 0};  // Heartbeat params
-    AlarmInfo alarmInfoToSend;              // Skarpt larm
-    bool timeIsSet = false;
     initWiFi();
-    initBLE();
-    Serial.println("WiFi & BLE: Init - Complete!");
+    
+    Serial.println("WiFi: Init - Complete!");
 
     for (;;){
-        // väntar här - vaknar av Queue ELLER timeout
-        BaseType_t xResult = xQueueReceive(xAlarmQueue, &alarmInfoToSend,  pdMS_TO_TICKS(5000)); // TESTAR öka 5s->10s
-        // körs ALLTID när loopen vaknar (KÖ eller Timeout);
-
-        // körs endast vid TIMEOUT
-        if (!xResult){
-            manageBLE(&heartbeat);
-            manageWiFi();
-            if (wifiIsConnected()){
-                manageMQTT();
-                if (!timeIsSet){
-                    timeIsSet = initTime();
-                }
+        manageWiFi();
+        if (wifiIsConnected()){
+            if (!node.timeIsSet){
+                node.timeIsSet = initTimeWiFi();
             }
-        } else {
-            // Körs endast vid KÖ / LARM (= pdPASS/TRUE)
-            manageBLE(&alarmInfoToSend);
+
+            manageMQTT();
+            if (!node.NTCsynced && node.connectionStatus.mqttIsActive){
+                node.NTCsynced = initTimeNTP();
+            }
         }
-        vTaskDelay(100);
+        vTaskDelay(5000);
     }
 }
 
@@ -158,4 +146,27 @@ int readLowPrioSensors(){
 
     Serial.println("WL: No water leak..\n"); 
     // kolla water leak sensorn här..
+}
+
+
+void vBLETask(void* Params){
+    // skicka ble från queue 
+    initBLE();
+    const AlarmInfo heartbeat = {NONE, 0}; 
+    AlarmInfo alarmInfoToSend;
+    Serial.println("BLE: Init - Complete!");
+
+    for (;;){
+        BaseType_t xResult = xQueueReceive(xAlarmQueue, &alarmInfoToSend,  pdMS_TO_TICKS(5000));
+
+        if (!xResult){
+            // Körs endast vid TIMEOUT
+            manageBLE(&heartbeat);
+            Serial.println("BLE: Heartbeat sent..");
+        } else {
+            // Körs endast vid KÖ / LARM (= pdPASS/TRUE)
+            manageBLE(&alarmInfoToSend);
+        }
+        vTaskDelay(100);
+    }
 }
