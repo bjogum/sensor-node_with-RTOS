@@ -16,10 +16,6 @@ extern "C" void vApplicationTickHook(void) {
   node.sysTime++;
 }
 
-extern "C" void vApplicationTickHook(void) {
-  node.sysTime++;
-}
-
 void setup() {
   Serial.begin(115200);
   while(!Serial);
