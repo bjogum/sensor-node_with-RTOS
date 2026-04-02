@@ -14,7 +14,6 @@
 #include "sensor_motion.h"
 #include "sensor_reed.h"
 #include "ble_manager.h"
-#define LOW_PRIO_SENSORS_READ 2000 //  (TEST: 2s)
 
 void initComponents(){
     initCredentials();
@@ -123,7 +122,6 @@ void vNetworkTask(void *Params){
                     timeIsSet = initTime();
                 }
             }
-            
         } else {
             // Körs endast vid KÖ / LARM (= pdPASS/TRUE)
             manageBLE(&alarmInfoToSend);

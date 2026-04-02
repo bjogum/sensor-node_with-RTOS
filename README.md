@@ -70,7 +70,9 @@ MQTT (Tx):
 ---
 ## Setup - Info
 
-1) Update your Credentials → plattformio.ini
+1) Update your Arduino-firmware version first, in Arduino IDE.
+  * Select board -> Menu: Tools -> Menu: Firmware Update
+2) Update your Credentials → plattformio.ini
 
 **Visual Diagnostic (LED matrix)**
 * Flash patterns:
