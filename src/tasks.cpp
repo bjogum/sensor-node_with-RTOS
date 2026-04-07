@@ -77,22 +77,25 @@ void vAlarmTask(void *Params){
             // kör endast vid semaphore
             if (xResult){
                 if (node.sensors.HWEvent_motionDetect){
-                node.sensors.motionDetect = true;
-                // BLE eller MQTT? - MQTT för lagring?
-                node.sensors.HWEvent_motionDetect = false;
+                    node.sensors.motionDetect = true;
+                    checkAlarmStatus();
+                    node.sensors.HWEvent_motionDetect = false;
+                    node.sensors.motionDetect = false;
                 }
 
                 if (node.sensors.HWEvent_reedSensor1){
-                node.sensors.reedSensor1 = true;
-                // BLE eller MQTT? - MQTT för lagring?
-                node.sensors.HWEvent_reedSensor1 = false;
+                    node.sensors.reedSensor1 = true;
+                    checkAlarmStatus();
+                    node.sensors.HWEvent_reedSensor1 = false;
+                    node.sensors.reedSensor1 = false;
                 }
             } else {
                 // går ENDAST på tidsintevall - oberoende semaphore, ~2000ms. 
                 getDS18B20data();
+                checkAlarmStatus();
                 }
 
-        checkAlarmStatus(); // Checka om något larm är triggat.
+         // Checka om något larm är triggat.
         vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
