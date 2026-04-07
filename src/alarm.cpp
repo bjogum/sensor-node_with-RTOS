@@ -87,7 +87,7 @@ int checkAlarmStatus(){
   {
   case STATE_ARMED_AWAY:
     // Reed (door / widnow sensor)
-    if (node.alarmStatus.intrusionAlarm = false && node.sensors.reedSensor1 == true){
+    if (node.alarmStatus.intrusionAlarm == false && node.sensors.reedSensor1 == true){
       node.alarmStatus.intrusionAlarm = true;
 
       // lagrar vad & när i struct.
@@ -96,11 +96,11 @@ int checkAlarmStatus(){
       
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
     } else {
-      node.alarmStatus.intrusionAlarm = false;
+      // node.alarmStatus.intrusionAlarm = false;  <<------ Ska bara kunna inaktiveras "aktivt" ..
     }
 
     // Motion
-    if (node.alarmStatus.intrusionAlarm = false && node.sensors.motionDetect == true){
+    if (node.alarmStatus.intrusionAlarm == false && node.sensors.motionDetect == true){
       node.alarmStatus.intrusionAlarm = true;
 
       alarmInfo.trigger = MOTION;
@@ -108,13 +108,13 @@ int checkAlarmStatus(){
 
       Serial.println("\n--MOTION DETECTED--\n");
     } else {
-      node.alarmStatus.intrusionAlarm = false;
+      // node.alarmStatus.intrusionAlarm = false;  <<------ Ska bara kunna inaktiveras "aktivt" ..
     }
     return 0;
 
   case STATE_ARMED_HOME:
     // Reed (door / widnow sensor)
-      if (node.alarmStatus.intrusionAlarm = false && node.sensors.reedSensor1 == true){
+      if (node.alarmStatus.intrusionAlarm == false && node.sensors.reedSensor1 == true){
       node.alarmStatus.intrusionAlarm = true;
 
       alarmInfo.trigger = DOOR;
@@ -122,7 +122,7 @@ int checkAlarmStatus(){
 
       Serial.println("\n--DOOR/WINDOW DETECTED--\n");
     } else {
-      node.alarmStatus.intrusionAlarm = false;
+      // node.alarmStatus.intrusionAlarm = false;  <<------ Ska bara kunna inaktiveras "aktivt" ..
     }
     return 0;
 

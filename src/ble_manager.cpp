@@ -1,12 +1,17 @@
 #include <ArduinoBLE.h>
 #include <stdbool.h>
 #include "alarm.h"
-#define ALARM_SEND_REPEAT 3
 
 // UUID https://www.uuidgenerator.net/
 BLEService customService("19B10000-E8F2-537E-4F6C-D104768A1214");
 
-// BLEIndicate - skickar med ACK, "leveransgaranti"
+// Characteristic för att TA EMOT larmstatus (1 byte)
+BLEByteCharacteristic stateCharacteristic(
+  "19B10002-E8F2-537E-4F6C-D104768A1214", 
+  BLERead | BLEWrite
+);
+
+// Characteristic för att SKICKA larm-info (5 byte)
 BLECharacteristic levelCharacteristic(
   "19B10001-E8F2-537E-4F6C-D104768A1214",
   BLERead | BLEIndicate,
@@ -25,8 +30,11 @@ bool initBLE(){
   BLE.setAdvertisedService(customService);
 
   customService.addCharacteristic(levelCharacteristic);
+  customService.addCharacteristic(stateCharacteristic);
+
   BLE.addService(customService);
 
+  stateCharacteristic.writeValue((uint8_t)node.alarmMode); 
   levelCharacteristic.writeValue((uint8_t *)&alarmInfo, sizeof(alarmInfo));  
 
   BLE.advertise();
@@ -50,15 +58,24 @@ void manageBLE(const AlarmInfo *alarmData) {
       // Kör så länge klienten är ansluten [testar med IF för att göra den non-blocking]
       if (central.connected()) {     
         
-        // larmdata skickas via BLE - alt heartbeat 'NULL'
+        // skicka larmdata, via BLE - alt heartbeat 'NULL'
         levelCharacteristic.writeValue((uint8_t *)alarmData, sizeof(alarmData)); 
 
-        // DEBUG
+        // DEBUG (visar larmstrukten som skickas till ESP..)
         Serial.print("\nBLE: data sent: ");
         Serial.print(alarmData->trigger);
         Serial.print("\nBLE: time sent: ");
         Serial.println(alarmData->time);
         
+        // Ta emot data från ESP32 - "alarm-state"
+        if (stateCharacteristic.written()){
+          uint8_t receivedState = stateCharacteristic.value();
+
+          // uppdatera internt state med mottaget state
+          node.alarmMode = (AlarmMode)receivedState;
+          Serial.print("\nBLE: Nytt state mottaget: ");
+          Serial.println(node.alarmMode);
+        }
       }  else {
         Serial.println("BLE: Klient kopplade ner");
         node.connectionStatus.bleIsActive = false;

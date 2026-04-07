@@ -117,7 +117,7 @@ void vNetworkTask(void *Params){
 
             manageMQTT();
 
-            // synca tiden med broker
+            // synca tiden mot broker
             if (!node.NTCsynced && node.connectionStatus.mqttIsActive){
                 node.NTCsynced = initTimeNTP();
             }

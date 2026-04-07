@@ -49,9 +49,9 @@ extern AlarmInfo alarmInfo;
 // enum: Definierar larm "mode"
 typedef enum
 {
-    STATE_DISARMED,
-    STATE_ARMED_HOME,
-    STATE_ARMED_AWAY
+    STATE_DISARMED = 0,
+    STATE_ARMED_HOME = 1,
+    STATE_ARMED_AWAY = 2
 }AlarmMode;
 
 typedef struct {
