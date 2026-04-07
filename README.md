@@ -88,20 +88,6 @@ MQTT (Tx):
   * Every alarm event has an time stamp
 
 ---
-
-## Comminucation: BLE & MQTT 
-
-BLE (Tx) - `Indicate with handshake`:
-  * Heartbet: Every 5s 
-  * Send critical alarms, as packages.
-
-MQTT (Tx):
-* Heartbet: Every 10s
-* Has Will & Testament (LWT)
-  * If the sensor node stops sending heartbeats, an 'OFFLINE' status will be published by the Broker.
-* Send info every 30s: temp/humidity & ( soon water leak )
-
----
 ## Changelog
 ### [2026-03-31] - MQTT & NTP Updates
 - Added TLS to current MQTT/WiFi management.
