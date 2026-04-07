@@ -68,11 +68,11 @@ void manageBLE(const AlarmInfo *alarmData) {
 
         // DEBUG (visar larmstrukten som skickas till ESP..)
         Serial.print("\n\n------BLE_DATA------");
-        Serial.print("\nBLE: Skickar till: ");
+        Serial.print("\nBLE: Send  to: ");
         Serial.print(central.address());
-        Serial.print("\nBLE: data sent: ");
+        Serial.print("\nBLE Tx: data sent: ");
         Serial.print(alarmData->trigger);
-        Serial.print("\nBLE: time sent: ");
+        Serial.print("\nBLE Tx: time sent: ");
         Serial.print(alarmData->time);
         Serial.print("\n------BLE_DATA------\n\n");
         
@@ -82,7 +82,7 @@ void manageBLE(const AlarmInfo *alarmData) {
 
           // uppdatera internt state med mottaget state
           node.alarmMode = (AlarmMode)receivedState;
-          Serial.print("\nBLE: Nytt state mottaget: ");
+          Serial.print("\nBLE Rx: Nytt state mottaget: ");
           Serial.println(node.alarmMode);
         }
       }  else {
