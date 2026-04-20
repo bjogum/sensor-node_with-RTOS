@@ -49,7 +49,7 @@ BLE (Tx)
   * Send critical alarms packages (5 bytes) with time-stamp.
 
 BLE (Rx)
- * Receive "heartbeat-state" from Gateway node / ESP32 (1 byte) as - acting as a heartbeat + alarm-state message:
+ * Receive "heartbeat-state" from Gateway node / ESP32 (1 byte) as - acting as a combine heartbeat/alarm-state:
    * DISARMED (0)
    * ARMED-HOME (1)
    * ARMED-AWAY (2)
