@@ -45,12 +45,11 @@ When an alarm is detected - at fire or intrution:
 ---
 ## Comminucation: BLE & MQTT 
 
-BLE (Tx) - `Indicate with handshake`:
-  * Heartbet: Every 5s 
-  * Send critical alarms, as packages (5 bytes)
+BLE (Tx)
+  * Send critical alarms packages (5 bytes) with time-stamp.
 
 BLE (Rx)
- * Receive alarm-state from Gateway node / ESP32 (1 byte) as:
+ * Receive "heartbeat-state" from Gateway node / ESP32 (1 byte) as - acting as a heartbeat + alarm-state message:
    * DISARMED (0)
    * ARMED-HOME (1)
    * ARMED-AWAY (2)
