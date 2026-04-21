@@ -7,6 +7,7 @@ extern SemaphoreHandle_t xAlarmSemaphore;
 extern SemaphoreHandle_t xNetworkSemaphore;
 extern SemaphoreHandle_t xSystemMonitorSemaphore;
 extern QueueHandle_t xAlarmQueue;
+extern QueueHandle_t xMessageQueue; 
 
 // HIGH PRIO pins to monitor (HW interrupt)
 const int reedPin = 3;
@@ -33,26 +34,32 @@ typedef enum : uint8_t
     WATER = 1,
     DOOR = 2,
     MOTION = 3,
-    FIRE = 4
+    FIRE = 4,
+    LOST_NODE = 5
 }AlarmTrigger;
 
-// packad strukt
-typedef struct __attribute__((packed))
-{
-    AlarmTrigger trigger;
-    uint32_t time;
-}AlarmInfo;
-
-extern AlarmInfo alarmInfo;
-
-
 // enum: Definierar larm "mode"
-typedef enum
+typedef enum : uint8_t
 {
     STATE_DISARMED = 0,
     STATE_ARMED_HOME = 1,
     STATE_ARMED_AWAY = 2
 }AlarmMode;
+
+
+// packad strukt 
+typedef struct __attribute__((packed)) // 15-byte packat
+{
+    AlarmMode alarmMode;    // State: 0=Disarmed, 1=ArmedHome, 2=ArmedAway [8 byte]
+    AlarmTrigger trigger;   // Trigger: 0=None, 1=Water, 2=Door, 3=Motion, 4=Fire, 5=NodeMissing (ESP) [8 byte]
+    uint32_t time;          // Timestamp - Unixtime. [4 byte]
+    // uint8_t temp;
+    // uint8_t hum;
+    // uint8_t remoteActivete;
+}AlarmInfo;
+
+extern AlarmInfo alarmInfo;
+
 
 typedef struct {
     bool wifiIsActive;
@@ -93,10 +100,10 @@ typedef struct
 // struct: packa SAMTLIG data (extern)
 typedef struct
 {
-    RunStatus runStatus;       // WAKING_UP | RUNNING
+    RunStatus runStatus;        // WAKING_UP | RUNNING
     ConnectionStatus connectionStatus; // WiFi Active? | BLE Active? | MQTT Active?
-    AlarmMode alarmMode;       // STATE_DISARMED | STATE_ARMED_HOME | STATE_ARMED_AWAY
-    AlarmReason alarmStatus;   // intrusionAlarm | fireAlarm | waterLeak | systemFailure
+    AlarmMode alarmMode;        // STATE_DISARMED | STATE_ARMED_HOME | STATE_ARMED_AWAY
+    AlarmReason alarmStatus;    // intrusionAlarm | fireAlarm | waterLeak | systemFailure
     SensorData sensors;         // all sensordata
     volatile unsigned long sysTime;      // System-tiden
     bool timeIsSet;             // Clock is synchronized

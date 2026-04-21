@@ -4,7 +4,7 @@
 void initCredentials();
 int manageMQTT();
 void initSendMQTT();
-void sendMQTT();
+void sendMQTT(AlarmInfo *info);
 void receiveMQTT();
 
 #endif

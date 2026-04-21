@@ -8,7 +8,7 @@
 #include <Arduino_FreeRTOS.h>
 #define DS18B20_ALARMING_TEMP 60 // Temp: ca 60
 
-AlarmInfo alarmInfo =  {NONE, 0};
+AlarmInfo alarmInfo =  {STATE_DISARMED, NONE, -1};
 uint32_t lastFireTimer;
 uint32_t lastWaterLeakTimer;
 
@@ -142,9 +142,18 @@ void dispatchAlarm(){
     alarmInfo.time = getUnixTime();
   }
 
-  // skicka larmpaketet till kön
-  xQueueSend(xAlarmQueue, &alarmInfo, 0);
+  // skicka larmpaket till kö (BLE)
+  if (!xQueueSend(xAlarmQueue, &alarmInfo, pdMS_TO_TICKS(100))){
+    Serial.println("! Kunde ej skicka larm till AlarmQueue !");
+    // spara larmet i EEPROM/NVS (Flash) ?
+  }
+
+  // skicka larmpaket till kö (MQTT)
+  if (!xQueueSend(xMessageQueue, &alarmInfo, pdMS_TO_TICKS(100))){
+    Serial.println("! Kunde ej skicka larm till MessagesQueue !");
+    // spara larmet i EEPROM/NVS (Flash) ?
+  }
 
   // nolla larmet
-  alarmInfo =  {NONE, 0};
+  alarmInfo =  {node.alarmMode, NONE, 0};
 }

@@ -5,12 +5,14 @@
 #include "sensor_motion.h"
 #include "sensor_reed.h"
 #include "indicateStatus.h"
+#include "ble_manager.h"
 
 SemaphoreHandle_t xAlarmSemaphore;
 SemaphoreHandle_t xSystemMonitorSemaphore;
 SemaphoreHandle_t xNetworkSemaphore;
 TimerHandle_t xLEDTimer;
-QueueHandle_t xAlarmQueue;
+QueueHandle_t xAlarmQueue;  // BLE kö - för ESP
+QueueHandle_t xMessageQueue; // MQTT kö - för broker.
 
 extern "C" void vApplicationTickHook(void) {
   node.sysTime++;
@@ -29,6 +31,7 @@ void setup() {
   xSystemMonitorSemaphore = xSemaphoreCreateBinary();
   xNetworkSemaphore = xSemaphoreCreateBinary();
   xAlarmQueue = xQueueCreate(10, sizeof(AlarmInfo));
+  xMessageQueue = xQueueCreate(10, sizeof(AlarmInfo));
 
   //attachInterrupt(digitalPinToInterrupt(mq2Pin), smokeIsDetected, RISING); - Körs digitalt (DO).
   attachInterrupt(digitalPinToInterrupt(reedPin), reedIsTriggerd, RISING);
@@ -36,7 +39,7 @@ void setup() {
 
   xTaskCreate(vAlarmTask, "ALARM", 192, NULL, 4, NULL); // OBS! Kan behöva ökas när vi ökar antal sensorer här.
   xTaskCreate(vBLETask, "BLE", 512, NULL, 3, NULL);
-  xTaskCreate(vNetworkTask, "WIFI", 1024, NULL, 2, NULL);
+  xTaskCreate(vNetworkTask, "WIFI", 1024, NULL, 3, NULL);
   xTaskCreate(vSystemMonitorTask, "MONITOR", 192, NULL, 1, NULL);
 
   vTaskStartScheduler();

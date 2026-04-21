@@ -72,7 +72,7 @@ void vAlarmTask(void *Params){
     // allt här körs EN gång
     for (;;){
         // väntar på given semafor - dvs. ett HW-interrupt, 
-        BaseType_t xResult = xSemaphoreTake(xAlarmSemaphore, pdMS_TO_TICKS(2000)); // portMAX_DELAY - DS18B20 här, verkar sänka mqtt.. one-wire?
+        BaseType_t xResult = xSemaphoreTake(xAlarmSemaphore, pdMS_TO_TICKS(2000)); 
 
             // kör endast vid semaphore
             if (xResult){
@@ -106,10 +106,14 @@ void vAlarmTask(void *Params){
 void vNetworkTask(void *Params){
     // körs bara EN gång
     initWiFi();
-    
+    AlarmInfo mqttToSend;
     Serial.println("WiFi: Init - Complete!");
 
     for (;;){
+        
+        // behöver vakna vid LARM / STATE-update (samt timeout för Wifi + MQTT..)
+        BaseType_t xResult = xQueueReceive(xMessageQueue, &mqttToSend,  pdMS_TO_TICKS(5000));
+
         manageWiFi();
         if (wifiIsConnected()){
 
@@ -117,15 +121,20 @@ void vNetworkTask(void *Params){
             if (!node.timeIsSet){
                 node.timeIsSet = initTimeWiFi();
             }
-
-            manageMQTT();
-
             // synca tiden mot broker
             if (!node.NTCsynced && node.connectionStatus.mqttIsActive){
                 node.NTCsynced = initTimeNTP();
             }
+
+            if (xResult){
+                // ::event::
+                sendMQTT(&mqttToSend); //  skicka med meddelndet här? ---> &messageToSend
+                // c) vid larm / state (Queue) event [SEND]
+            }
+            
+            manageMQTT(); 
         }
-        vTaskDelay(5000);
+        //vTaskDelay(5000);
     }
 }
 
@@ -163,10 +172,10 @@ int readLowPrioSensors(){
 void vBLETask(void* Params){
     // skicka ble från queue 
     initBLE();
-    const AlarmInfo empty = {NONE, 0}; 
+    //const AlarmInfo empty = {NONE, 0}; -- Ta bort..
     AlarmInfo alarmInfoToSend;
     Serial.println("BLE: Init - Complete!");
-    manageBLE(&empty);
+    //manageBLE(&empty); -- Ta bort..
 
     for (;;){
         BaseType_t xResult = xQueueReceive(xAlarmQueue, &alarmInfoToSend,  pdMS_TO_TICKS(100));

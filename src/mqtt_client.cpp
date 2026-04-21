@@ -3,11 +3,11 @@
 #include "wifi_manager.h"
 #include "certificate.h"
 #include <ArduinoMqttClient.h>
-//#include <ArduinoJson.h> - används inte ännu..
+#include <ArduinoJson.h> // - används inte ännu..
 #include "indicateStatus.h"
 #define MQTT_SEND_TIME 30000            // Hur ofta ska vi skicka mqtt.. Testar: 30s
-#define MQTT_RECONNECT_TIME 60000       // max reconnect intervall, Testar: 15s
-#define MQTT_CONNECTION_TIMEOUT 5000   
+#define MQTT_RECONNECT_TIME 5000       // max reconnect intervall, Testar: 60s->10s
+#define MQTT_CONNECTION_TIMEOUT 20000 // testar öka från 5000..   
 #define MQTT_HEARTBEAT 10000            // | Testar 10s (LWT sker ~16s)
 #define BROKER_PORT 8883                // okrypt: 1883 - TLS, krypt: 8883
 
@@ -16,10 +16,12 @@ MqttClient mqttClient(wifiClient);
 
 int port                         = BROKER_PORT;
 const char broker[]              = ZeroIP;
-const char indoorTempTopic[]     = "sensor/indoorTemp";
-const char indoorHumidTopic[]    = "sensor/indoorHumidity";
-const char waterleakTopic[]      = "sensor/waterleak";
-const char fireTopic[]           = "sensor/fire";
+
+const char alarmInfoTopic[]      = "alarmInfo"; // -> State, Trigger + Time 'struct' .. JSON.
+const char indoorTempTopic[]     = "sensor/indoorTemp";         // - Ta bort?
+//const char indoorHumidTopic[]    = "sensor/indoorHumidity";     // - Ta bort?
+//const char waterleakTopic[]      = "sensor/waterleak";          // - Ta bort?
+//const char fireTopic[]           = "sensor/fire";               // - Ta bort?
 const char systemFailure[]       = "systemFailure";
 const char willTopic[]           = "sensor-node-status";
 const char willPayload[]         = "OFFLINE";
@@ -39,7 +41,9 @@ void initCredentials(){
 int manageMQTT() {
 
     if (node.connectionStatus.mqttIsActive){
-        sendMQTT();
+        
+        
+        sendMQTT(nullptr); // ---> Flyttad! testar att lägga denna i tasken.
         receiveMQTT();
     }
 
@@ -77,9 +81,39 @@ void initSendMQTT(){
     }
 
 // -- avgör om datan behöver publiseras - Beroende på sensorer/status samt state --
-void sendMQTT(){
+void sendMQTT(AlarmInfo *info){
     // .poll() : håller igång anslutningen (ping) - och skickar/tar emot MQTT
     mqttClient.poll();
+    
+    if (info != nullptr){
+        // Skapa JSON doc 
+        JsonDocument doc;
+
+        // Mappa struct till JSON-nycklar
+        doc["id"] = "SENSOR_NODE"; 
+        doc["trigger"] = info->trigger;
+        doc["time"] = info->time;
+        doc["state"] = (uint8_t)node.alarmMode;
+
+        // Konvertera till en sträng
+        String jsonString;
+        serializeJson(doc, jsonString);
+
+        // Skicka via din MQTT-klient
+        mqttClient.beginMessage(alarmInfoTopic, false, 1, false);
+        //mqttClient.print(jsonString); -- kan tas bort..
+        
+        // skriver direkt till streamen istället för via en sträng.. för optimering
+        serializeJson(doc, mqttClient); 
+
+        if (mqttClient.endMessage()){
+            Serial.println("MQTT skickat: " + jsonString);
+        } else {
+            Serial.println("! MQTT paket kunde ej skickas !");
+        }
+    }
+    
+
 
     if (node.sysTime - MQTTLastSendTimer >= MQTT_SEND_TIME){
         MQTTLastSendTimer = node.sysTime;
@@ -88,37 +122,37 @@ void sendMQTT(){
         if (mqttClient.endMessage()) {
             Serial.println("\nMQTT: Temp - Sent!");
         } 
-
-        mqttClient.beginMessage(indoorHumidTopic,false, 0,false);
-        mqttClient.print(node.sensors.indoorHumidity);
-        if (mqttClient.endMessage()) {
-            Serial.println("MQTT: Humidity - Sent!\n");
-        } 
-
-        if (node.alarmStatus.fireAlarm){
-            mqttClient.beginMessage(fireTopic,false, 0,false);
-            mqttClient.print(node.sensors.fireTemp);
-            mqttClient.print(node.sensors.smokeSensor);
-            if (mqttClient.endMessage()) {
-                Serial.println("\nMQTT: Fire - Sent!\n");
-        } 
-
-        if (node.alarmStatus.waterLeak){
-            mqttClient.beginMessage(waterleakTopic,false, 0,false);
-            mqttClient.print(node.sensors.waterLeak);
-            if (mqttClient.endMessage()) {
-                Serial.println("\nMQTT: Water - Sent!\n");
-            } 
-        }
+    }
+//
+    //    mqttClient.beginMessage(indoorHumidTopic,false, 0,false);
+    //    mqttClient.print(node.sensors.indoorHumidity);
+    //    if (mqttClient.endMessage()) {
+    //        Serial.println("MQTT: Humidity - Sent!\n");
+    //    } 
+//
+    //    if (node.alarmStatus.fireAlarm){
+    //        mqttClient.beginMessage(fireTopic,false, 0,false);
+    //        mqttClient.print(node.sensors.fireTemp);
+    //        mqttClient.print(node.sensors.smokeSensor);
+    //        if (mqttClient.endMessage()) {
+    //            Serial.println("\nMQTT: Fire - Sent!\n");
+    //    } 
+//
+    //    if (node.alarmStatus.waterLeak){
+    //        mqttClient.beginMessage(waterleakTopic,false, 0,false);
+    //        mqttClient.print(node.sensors.waterLeak);
+    //        if (mqttClient.endMessage()) {
+    //            Serial.println("\nMQTT: Water - Sent!\n");
+    //        } 
+    //    }
 
         if (node.alarmStatus.systemFailure){
             // skicka releveant larm
         } 
-    }
-    }
 }
+    
+
 
 void receiveMQTT(){
-
-    // TA EMOT data (sub) från ESP -> "state"
+    // TA EMOT data (sub) från Broker -- "remoteActivate"
 }
