@@ -53,9 +53,39 @@ System node = {
   .NTCsynced = false,
 };
 
+void handleStateChange(AlarmMode newState){
+  node.alarmMode = (AlarmMode)newState; 
+
+  // skicka nytt state till broker.
+  if (!xQueueSend(xMessageQueue, &alarmInfo, pdMS_TO_TICKS(100))){
+  Serial.println("! Kunde ej skicka nytt state (MQTT) !");
+  // spara larmet i EEPROM/NVS (Flash) ?
+  }
+
+  switch (newState)
+  {
+  case STATE_ARMED_AWAY:
+    // larma på (away)
+    break;
+
+  case STATE_ARMED_HOME:
+    // larma på (home)
+  break;
+
+  case STATE_DISARMED:
+  // larma av
+    xTimerStop(xAlarmEntryTimer,0);
+    node.alarmStatus.intrusionAlarm = false;
+  break;
+  
+  default:
+    break;
+  }
+}
+
 
 int checkAlarmStatus(){ 
-  // WATER-LEAK - skicka bara denna via MQTT ?
+  // WATER
   if ((node.sysTime - lastWaterLeakTimer >= 30000) && node.sensors.waterLeak == true){
     node.alarmStatus.waterLeak = true;
     lastWaterLeakTimer = node.sysTime;
@@ -74,7 +104,6 @@ int checkAlarmStatus(){
     node.alarmStatus.fireAlarm = true;
     lastFireTimer = node.sysTime;
 
-    // lagrar vad & när i struct.
     alarmInfo.trigger = FIRE;
     dispatchAlarm();
 
@@ -89,24 +118,15 @@ int checkAlarmStatus(){
     switch (node.alarmMode)
     {
     case STATE_ARMED_AWAY:
-      // Reed (door / widnow sensor)
       if (node.sensors.reedSensor1){
 
-        // flyttas efter timern..?
-        node.alarmStatus.intrusionAlarm = true;
-
-        // lagrar vad & när i struct. (skicka omedelbart via BLE)
         alarmInfo.trigger = DOOR;
         dispatchAlarm();
         
-        // Skickar till MQTT efter 30s
-        // countdown innan skarpt larm.. ESP + Arduino. 30s? 
-        // starta software-timer här .. BARA om den inte redan är startad.
         if (!xTimerIsTimerActive(xAlarmEntryTimer)){
           xTimerStart(xAlarmEntryTimer, 0);
           Serial.println("\n--DOOR/WINDOW opend. Counting down.. --\n");
         }
-
       } 
 
       // Motion
@@ -128,9 +148,6 @@ int checkAlarmStatus(){
         alarmInfo.trigger = DOOR;
         dispatchAlarm();
 
-        // Skickar till MQTT efter 30s
-        // countdown innan skarpt larm.. ESP + Arduino. 30s? 
-        // starta software-timer här .. BARA om den inte redan är startad.
         if (!xTimerIsTimerActive(xAlarmEntryTimer)){
           xTimerStart(xAlarmEntryTimer, 0);
           Serial.println("\n--DOOR/WINDOW opend. Counting down.. --\n");
@@ -173,12 +190,16 @@ void dispatchAlarm(bool sharpDoorAlarm){
 }
 
 void vAlarmTimerCallback(TimerHandle_t xTimer){
-  int timerID = (int)pvTimerGetTimerID(xTimer);
+  // larmar skarpt! (öppnat dörr, men ej larmat av i tid)
+  node.alarmStatus.intrusionAlarm = true;
+  alarmInfo.trigger = DOOR;
+  dispatchAlarm(true);
+  Serial.println("\n-- DOOR/WINDOW opend - ALARMING! --\n");
+}
 
-  if (timerID == ALARM_ENTRY_TIMER_ID){ // NÄR STATE GÅR TILL DISAMED - GLÖM EJ NOLLA & STOPPA TIMERN -> xTimerStop()
-    // här larmar vi på skarpt! (öppnat dörr, men ej larmat av i tid)
-    alarmInfo.trigger = DOOR;
-    dispatchAlarm(true);
-    Serial.println("\n-- DOOR/WINDOW opend - ALARMING! --\n");
-  }
+void vHeartbeatMissingCallback(TimerHandle_t xTimer){
+  // larmar skarpt! (ESP död)
+  alarmInfo.trigger = LOST_NODE;
+  dispatchAlarm(true);
+  Serial.println("\n-- NODE MISSING --\n");
 }

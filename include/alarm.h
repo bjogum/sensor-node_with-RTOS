@@ -1,37 +1,26 @@
 #ifndef ALARM_H
 #define ALARM_H
-#include <Arduino_FreeRTOS.h> // testa om det behövs, annars ersätt med Arduino_FreeRTOS.h
-// #define ALARM_EXIT_TIMER_ID 1 -> flyttar till ESP.
-#define ALARM_ENTRY_TIMER_ID 2
+#include <Arduino_FreeRTOS.h>
 
-// RTOS semaphore för larm
+// Semaphore, timers and Queue.
 extern SemaphoreHandle_t xAlarmSemaphore;
 extern SemaphoreHandle_t xNetworkSemaphore;
 extern SemaphoreHandle_t xSystemMonitorSemaphore;
 extern TimerHandle_t xAlarmEntryTimer; 
-extern TimerHandle_t xAlarmExitTimer; 
+extern TimerHandle_t xHeartbeatTimer;
 extern QueueHandle_t xAlarmQueue;
 extern QueueHandle_t xMessageQueue; 
+extern QueueHandle_t xHeartbeatStateQueue; 
 
 // HIGH PRIO pins to monitor (HW interrupt)
 const int reedPin = 3;
 const int pirPin = 4;
-
-int checkAlarmStatus();
-void vAlarmTask(void *Params);
-void vNetworkTask(void *Params);
-void vSystemMonitorTask(void *Params);
-void updCurrentTime(char* timestamp, size_t size);
-void vBLETask(void *Params);
-void dispatchAlarm(bool sharpDoorAlarm = false);
-void vAlarmTimerCallback(TimerHandle_t xTimer);
 
 typedef enum
 {
     WAKING_UP,
     RUNNING
 }RunStatus;
-
 
 typedef enum : uint8_t
 {
@@ -58,7 +47,6 @@ typedef struct {
     uint16_t apiHum; // outdoor humidity, from API
 } Climate;
 
-
 // packad strukt: för att skicka via BLE - Bara utvald AlarmInfo-data används för JSON objektet, som skickas mot broker.
 typedef struct __attribute__((packed)) // 15-byte packat
 {
@@ -70,7 +58,6 @@ typedef struct __attribute__((packed)) // 15-byte packat
 }AlarmInfo;
 
 extern AlarmInfo alarmInfo;
-
 
 typedef struct {
     bool wifiIsActive;
@@ -85,7 +72,6 @@ typedef struct {
     volatile bool HWEvent_reedSensor1;
     volatile bool motionDetect;
     volatile bool HWEvent_motionDetect;
-    
 
     // Fire (prio 2)
     bool smokeSensor;
@@ -97,7 +83,6 @@ typedef struct {
     bool waterLeak;
 }SensorData;
 
-
 // struct: Definiera "VAD" som larmar.
 typedef struct
 {
@@ -106,7 +91,6 @@ typedef struct
     bool waterLeak;
     bool systemFailure;
 }AlarmReason;
-
 
 // struct: packa SAMTLIG data (extern)
 typedef struct
@@ -123,5 +107,17 @@ typedef struct
 
 // deklarera variabel för systemet
 extern System node;
+
+// -- FUNCTIONS --
+int checkAlarmStatus();
+void vAlarmTask(void *Params);
+void vNetworkTask(void *Params);
+void vSystemMonitorTask(void *Params);
+void updCurrentTime(char* timestamp, size_t size);
+void vBLETask(void *Params);
+void dispatchAlarm(bool sharpDoorAlarm = false);
+void vAlarmTimerCallback(TimerHandle_t xTimer);
+void vHeartbeatMissingCallback(TimerHandle_t xTimer);
+void handleStateChange(AlarmMode newState);
 
 #endif

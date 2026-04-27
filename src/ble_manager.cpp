@@ -79,24 +79,14 @@ void manageBLE(const AlarmInfo *alarmData) {
           Serial.print("\n------BLE_DATA------\n\n");
         }
 
-        
         // Ta emot data från ESP32 - "alarm-state" - WHILE för att tömma hela kön! -- if tar bara ETT värde i taget=LAGG.
         while (stateCharacteristic.written()){
           uint8_t receivedState = stateCharacteristic.value();
 
-          // Om statet är nytt -> uppdatera det -- 
-          if (node.alarmMode != (AlarmMode)receivedState){
-            node.alarmMode = (AlarmMode)receivedState;  // skapa setter för detta
 
-            if (!xQueueSend(xMessageQueue, &alarmInfo, pdMS_TO_TICKS(100))){
-              Serial.println("! Kunde ej skicka larm till MessagesQueue (MQTT) !");
-              // spara larmet i EEPROM/NVS (Flash) ?
-            }
-          } 
-          
-          Serial.print("\nBLE Rx (ESP): Heartbeat-state: ");
-          Serial.println(receivedState); 
-  
+          if (!xQueueSend(xHeartbeatStateQueue, &receivedState, pdMS_TO_TICKS(100))){
+            Serial.println("BLE: Kön full, kunde inte skicka state!");
+          }
         }
       }  else {
         Serial.println("BLE: Klient kopplade ner");

@@ -177,24 +177,29 @@ int readLowPrioSensors(){
 
 
 void vBLETask(void* Params){
-    // skicka ble från queue 
     initBLE();
-    //const AlarmInfo empty = {NONE, 0}; -- Ta bort..
     AlarmInfo alarmInfoToSend;
+    AlarmMode newState;
     Serial.println("BLE: Init - Complete!");
-    //manageBLE(&empty); -- Ta bort..
 
     for (;;){
         BaseType_t xResult = xQueueReceive(xAlarmQueue, &alarmInfoToSend,  pdMS_TO_TICKS(100));
-
-        if (!xResult){
-            // Körs endast vid TIMEOUT
+        
+        if (xResult){   // vid KÖ / LARM (= pdPASS/TRUE)
+            manageBLE(&alarmInfoToSend);   
+        } else {        // vid Timeout
             manageBLE(nullptr);
-            vTaskDelay(pdMS_TO_TICKS(50)); // Testar att avlasta efter sändning..
-        } else {
-            // Körs endast vid KÖ / LARM (= pdPASS/TRUE)
-            manageBLE(&alarmInfoToSend);
         }
-        vTaskDelay(pdMS_TO_TICKS(200)); 
+
+        while (xQueueReceive(xHeartbeatStateQueue, &newState, 0)){
+            xTimerReset(xHeartbeatTimer, 0);
+            Serial.print("\nBLE Rx (ESP): Heartbeat-state: ");
+            Serial.println(newState); 
+
+            if (node.alarmMode != (AlarmMode)newState) {
+                handleStateChange((AlarmMode)newState);
+            }
+        } 
+        vTaskDelay(pdMS_TO_TICKS(100)); 
     }
 }
